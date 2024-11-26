@@ -1,13 +1,50 @@
 import pandas as pd
+import re
 
 # Define the file path
-file_path = 'MC2-CSVFirewallandIDSlogs/Firewall-04062012.csv'
+file_path = '/home/giorgio/Documents/COURSES/HPDAV/HPDAV_files_proj/MC2-CSVFirewallandIDSlogs/Firewall-04072012.csv'
 
 # Load the first ten rows of the CSV file
 data = pd.read_csv(file_path)
 
 # create a new data frame called new_data
 new_data = pd.DataFrame()
+
+# Define the mapping function based on the network description, so as to partiotion them into categories
+def map_ip(ip):
+    # Exact matches
+    exact_match = {
+        "10.32.0.1": 0,
+        "172.23.0.1": 1,
+        "10.32.0.100": 3,
+        "172.25.0.1": 4,
+        "10.99.99.2": 6,
+        "172.23.0.10": 8,
+        "172.23.0.2": 9
+    }
+
+    if ip in exact_match:
+        return exact_match[ip]
+
+    # Range matches
+    # 10.32.0.201-210, 10.32.1.100, 10.32.1.201-206, 10.32.5.1-254
+    if re.match(r"10\.32\.(0\.(20[1-9]|21[0]))|1\.(100)|1\.(201-206)|5\.(1-254)", ip):
+        return 5
+    
+    # 172.23.214.x through 172.23.229.x
+    if re.match(r"172\.23\.(214|215|216|217|218|219|220|221|222|223|224|225|226|227|228|229)\.\d{1,3}", ip):
+        return 7
+    
+    # 172.23.x.x excluding previously identified
+    if re.match(r"172\.23\.\d{1,3}\.\d{1,3}", ip):
+        return 10
+    
+    # (empty)
+    if ip == "(empty)":
+        return 11
+
+    # If no matches, return the same IP address (unchanged)
+    return ip
 
 # the structure of the column Date/time is the following: "YYYY-MM-DD HH:MM:SS". 
 # the possible values of the day are only 05 and 06, while the month and year are always the same. 
@@ -45,25 +82,24 @@ for code, message in message_code_mapping.items():
 new_data['Protocol'] = data['Protocol'].apply(lambda x: 0 if x == 'TCP' else 1 if x == 'UDP' else 2)
 
 # add source ip and destination ip columns
-# TODO: understand if how to aggregate these values, e.g. based on the prefix / host address bits
+# TODO: understand if non-mapped IPs are relevant / suspect
 new_data['Source IP'] = data['Source IP']
 new_data['Destination IP'] = data['Destination IP']
 
-# DO NOT add Source hostname and Destination hostname columns
+# DO NOT add Source hostname and Destination hostname columns since they are empty
 
 # add Source Port and Destination Port columns
 # TODO: understand if there exist ports with a special semantics, invalid and suspect ones
 # all the others are non relevant for visualization purposes
 new_data['Source port'] = data['Source port']
 new_data['Destination port'] = data['Destination port']
-# do not add the Source hostname and the Destination hostname columns since they are empty
 # select the Destination service and assign a number 0 to http, leave the rest as it is
 # new_data['Destination service'] = data['Destination service'].apply(lambda x: 0 if x == 'http' else x)
 new_data['Destination service'] = data['Destination service']
 
-# select the Direction and assign 0 if the value is "inbound" and 1 if the value is "outbound", leave empty as it is
-new_data['Direction'] = data['Direction'].apply(lambda x: 0 if x == 'inbound' else 1 if x == 'outbound' else x)
+# select the Direction and assign 0 if the value is "inbound", 1 if the value is "outbound", 2 to empty values
+new_data['Direction'] = data['Direction'].apply(lambda x: 0 if x == 'inbound' else 1 if x == 'outbound' else 2)
 
 # DO NOT add the Connections built / torn down since it is redundant with the Operation column
 # write new_data to a new CSV file with its own index
-new_data.to_csv('Firewall_filtered.csv', index=False)
+new_data.to_csv('Firewall_2_filtered.csv', index=False)
