@@ -1,3 +1,6 @@
+# folder containing the datasets
+MC2-CSVFirewallandIDSlogs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

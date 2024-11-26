@@ -2,7 +2,7 @@ import pandas as pd
 import re
 
 # Define the file path
-file_path = '/home/giorgio/Documents/COURSES/HPDAV/HPDAV_files_proj/MC2-CSVFirewallandIDSlogs/Firewall-04072012.csv'
+file_path = 'MC2-CSVFirewallandIDSlogs/Firewall-04072012.csv'
 
 # Load the first ten rows of the CSV file
 data = pd.read_csv(file_path)
@@ -12,6 +12,7 @@ new_data = pd.DataFrame()
 
 # Define the mapping function based on the network description, so as to partiotion them into categories
 def map_ip(ip):
+    ip = str(ip)
     # Exact matches
     exact_match = {
         "10.32.0.1": 0,
@@ -25,10 +26,22 @@ def map_ip(ip):
 
     if ip in exact_match:
         return exact_match[ip]
-
+    
     # Range matches
-    # 10.32.0.201-210, 10.32.1.100, 10.32.1.201-206, 10.32.5.1-254
-    if re.match(r"10\.32\.(0\.(20[1-9]|21[0]))|1\.(100)|1\.(201-206)|5\.(1-254)", ip):
+    # 10.32.0.201-210
+    if re.match(r"^10\.32\.0\.(20[1-9]|21[0])$", ip):
+        return 5
+    
+    # 10.32.1.100
+    if re.match(r"^10\.32\.1\.100$", ip):
+        return 5
+
+    # 10.32.1.201-206
+    if re.match(r"^10\.32\.1\.(20[1-6])$", ip):
+        return 5
+
+    # 10.32.5.1-254
+    if re.match(r"^10\.32\.5\.(\d{1,2}|1\d{2}|2[0-4]\d|25[0-4])$", ip):
         return 5
     
     # 172.23.214.x through 172.23.229.x
@@ -83,8 +96,8 @@ new_data['Protocol'] = data['Protocol'].apply(lambda x: 0 if x == 'TCP' else 1 i
 
 # add source ip and destination ip columns
 # TODO: understand if non-mapped IPs are relevant / suspect
-new_data['Source IP'] = data['Source IP']
-new_data['Destination IP'] = data['Destination IP']
+new_data['Source IP'] = data['Source IP'].apply(map_ip)
+new_data['Destination IP'] = data['Destination IP'].apply(map_ip)
 
 # DO NOT add Source hostname and Destination hostname columns since they are empty
 
@@ -102,4 +115,4 @@ new_data['Direction'] = data['Direction'].apply(lambda x: 0 if x == 'inbound' el
 
 # DO NOT add the Connections built / torn down since it is redundant with the Operation column
 # write new_data to a new CSV file with its own index
-new_data.to_csv('Firewall_2_filtered.csv', index=False)
+new_data.to_csv('MC2-CSVFirewallandIDSlogs/Firewall_2_filtered.csv', index=False)
