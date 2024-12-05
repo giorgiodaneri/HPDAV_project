@@ -2,10 +2,13 @@ import pandas as pd
 import re
 
 # Define the file path
-file_path = 'MC2-CSVFirewallandIDSlogs/Firewall-04072012.csv'
+file_path = 'MC2-CSVFirewallandIDSlogs/Firewall-04062012.csv'
+file_path2 = 'MC2-CSVFirewallandIDSlogs/Firewall-04072012.csv'
 
 # Load the first ten rows of the CSV file
 data = pd.read_csv(file_path)
+data2 = pd.read_csv(file_path2)
+data = pd.concat([data, data2])
 
 # create a new data frame called new_data
 new_data = pd.DataFrame()
@@ -96,8 +99,10 @@ new_data['Protocol'] = data['Protocol'].apply(lambda x: 0 if x == 'TCP' else 1 i
 
 # add source ip and destination ip columns
 # TODO: understand if non-mapped IPs are relevant / suspect
-new_data['Source IP'] = data['Source IP'].apply(map_ip)
-new_data['Destination IP'] = data['Destination IP'].apply(map_ip)
+# new_data['Source IP'] = data['Source IP'].apply(map_ip)
+new_data['Source IP'] = data['Source IP']
+# new_data['Destination IP'] = data['Destination IP'].apply(map_ip)
+new_data['Destination IP'] = data['Destination IP']
 
 # DO NOT add Source hostname and Destination hostname columns since they are empty
 
@@ -115,4 +120,4 @@ new_data['Direction'] = data['Direction'].apply(lambda x: 0 if x == 'inbound' el
 
 # DO NOT add the Connections built / torn down since it is redundant with the Operation column
 # write new_data to a new CSV file with its own index
-new_data.to_csv('MC2-CSVFirewallandIDSlogs/Firewall_2_filtered.csv', index=False)
+new_data.to_csv('MC2-CSVFirewallandIDSlogs/Firewall_global_filtered.csv', index=False)
