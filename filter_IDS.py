@@ -89,7 +89,7 @@ classification_mapping = {value: idx for idx, value in enumerate(classification)
 print("classification mapping: ", classification_mapping)
 print("classification: ", classification)
 # write the classification mapping to a .txt file
-with open('classification_mapping.txt', 'w') as f:
+with open('MC2-CSVFirewallandIDSlogs/classification_mapping.txt', 'w') as f:
     for key, value in classification_mapping.items():
         f.write(f'{key}: {value}\n')
 
