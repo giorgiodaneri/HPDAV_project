@@ -4,17 +4,12 @@ export const getProjectionData = createAsyncThunk('projectionData/fetchData',
   async (args,thunkAPI) => {
     // Take data by calling the API -> call getDataset in the backend
     const response = await fetch('http://localhost:5000/getDataset');
+    console.log("API response:", response);
     // convert the response to json
     const responseJson = await response.json();
+    console.log("API response JSON:", responseJson);
     // return the data
-    return responseJson.projection.map((item,i)=>{
-      return {
-        // xValue:item[0], 
-        // yValue:item[1],
-        // index:i, 
-        // category:responseJson.categories[i]
-      }
-    });
+    return responseJson;
     // when a result is returned, extraReducer below is triggered
     // with the case getProjectionData.fulfilled
   })
@@ -29,13 +24,16 @@ export const getProjectionData = createAsyncThunk('projectionData/fetchData',
       builder
         .addCase(getProjectionData.pending, (state, action)=>{
           // Case where the action is pending
+          console.log("getProjectionData pending");
         })
         .addCase(getProjectionData.fulfilled, (state, action) => {
           // Case where the action is fulfilled -> return the data to the state
+          console.log("getProjectionData fulfilled");
           return action.payload
         })
         .addCase(getProjectionData.rejected, (state, action)=>{
           // Case where the action is rejected
+          console.log("getProjectionData rejected", action.error.message);
         })
     }
     })

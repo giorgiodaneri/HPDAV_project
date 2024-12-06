@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 # insert code for server initialization if needed
-dataset, true_k = dataset.get20newsgroups()
+dataset = dataset.get_dataset()
 
 @app.route("/")
 def hello_world():
@@ -16,4 +16,4 @@ def hello_world():
 
 @app.route("/getDataset")
 def get_dataset():
-    return {"dataset": dataset.data, "target": dataset.target}  
+    return {"dataset": dataset}  

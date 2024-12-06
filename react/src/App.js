@@ -9,6 +9,7 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(()=>{
+    console.log("App useEffect")
     dispatch(getProjectionData());
   },[]) // empty dependencies [] <=> component did mount
 
@@ -16,7 +17,6 @@ function App() {
     <div className="App">
       {console.log("App rendering")}
       <div id="view-container" className="row">
-        <ScatterplotContainer/>
       </div>
     </div>
   );
