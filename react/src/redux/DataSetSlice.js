@@ -1,44 +1,44 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-export const getProjectionData = createAsyncThunk('projectionData/fetchData',
-  async (args,thunkAPI) => {
-    // Take data by calling the API -> call getDataset in the backend
-    const response = await fetch('http://localhost:5000/getDataset');
-    console.log("API response:", response);
-    // convert the response to json
-    const responseJson = await response.json();
-    console.log("API response JSON:", responseJson);
-    // return the data
-    return responseJson;
-    // when a result is returned, extraReducer below is triggered
-    // with the case getProjectionData.fulfilled
-  })
+export const getProjectionData = createAsyncThunk('projectionData/fetchData', async () => {
+  const response = await fetch('http://localhost:5000/getDataset');
+  const responseJson = await response.json();
 
-  export const dataSetSlice = createSlice({
-      name: 'dataSet',
-      initialState: [],
-      reducers: { // add reducer if needed
-    },
-    // extraReducers are triggered when the action is dispatched
-    extraReducers: builder => {
-      builder
-        .addCase(getProjectionData.pending, (state, action)=>{
-          // Case where the action is pending
-          console.log("getProjectionData pending");
-        })
-        .addCase(getProjectionData.fulfilled, (state, action) => {
-          // Case where the action is fulfilled -> return the data to the state
-          console.log("getProjectionData fulfilled");
-          return action.payload
-        })
-        .addCase(getProjectionData.rejected, (state, action)=>{
-          // Case where the action is rejected
-          console.log("getProjectionData rejected", action.error.message);
-        })
-    }
-    })
+  if (!responseJson.dataset) {
+    throw new Error('Dataset is missing in the API response');
+  }
+  return responseJson;
+});
 
-// Action creators are generated for each case reducer function
-// export const { reducerName } = dataSetSlice.actions
+export const dataSetSlice = createSlice({
+  name: 'dataSet',
+  initialState: {
+    data: [], // Ensure `data` is initialized as an empty array
+    status: 'idle',
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getProjectionData.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(getProjectionData.fulfilled, (state, action) => {
+        if (action.payload && action.payload.dataset) {
+          state.data = JSON.parse(action.payload.dataset); // Ensure correct parsing
+          state.status = 'succeeded';
+        } else {
+          state.data = []; // If no dataset, ensure `data` is set to an empty array
+          state.status = 'failed';
+        }
+      })
+      .addCase(getProjectionData.rejected, (state, action) => {
+        state.data = []; // Reset `data` to an empty array on error
+        state.status = 'failed';
+        state.error = action.error.message;
+      });
+  },
+});
 
-export default dataSetSlice.reducer
+export default dataSetSlice.reducer;

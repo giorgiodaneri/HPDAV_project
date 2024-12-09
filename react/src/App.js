@@ -2,6 +2,7 @@ import './App.css';
 import { useEffect} from 'react';
 import { getProjectionData } from './redux/DataSetSlice';
 import { useDispatch } from 'react-redux';
+import StreamGraphComponent from './components/streamgraph/StreamGraphComponent';
 // here import other dependencies
 
 // a component is a piece of code which render a part of the user interface
@@ -17,6 +18,7 @@ function App() {
     <div className="App">
       {console.log("App rendering")}
       <div id="view-container" className="row">
+        <StreamGraphComponent />
       </div>
     </div>
   );

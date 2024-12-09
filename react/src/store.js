@@ -1,7 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit'
-import dataSetReducer from './redux/DataSetSlice'
-export default configureStore({
+import { configureStore } from '@reduxjs/toolkit';
+import dataSetReducer from './redux/DataSetSlice';
+
+const store = configureStore({
   reducer: {
-    dataset: dataSetReducer
-    }
-})
+    dataSet: dataSetReducer, // Register the `dataSet` slice here
+  },
+});
+
+export default store;
