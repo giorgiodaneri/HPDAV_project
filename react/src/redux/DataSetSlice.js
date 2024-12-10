@@ -13,10 +13,19 @@ export const dataSetSlice = createSlice({
   name: 'dataSet',
   initialState: {
     data: [], // Ensure `data` is initialized as an empty array
+    selectedTimeRange: null, // Selected time range from the brush
+    selectedClassifications: [], // Selected classifications within the range
     status: 'idle',
     error: null,
   },
-  reducers: {},
+  reducers: {
+    updateSelectedTimeRange: (state, action) => {
+      state.selectedTimeRange = action.payload; // Store selected time range in the streamgraph
+    },
+    updateSelectedClassifications: (state, action) => {
+      state.selectedClassifications = action.payload; // Store classifications within the range of streamgraph
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getProjectionData.pending, (state) => {
@@ -39,5 +48,7 @@ export const dataSetSlice = createSlice({
       });
   },
 });
+
+export const { updateSelectedTimeRange, updateSelectedClassifications } = dataSetSlice.actions;
 
 export default dataSetSlice.reducer;

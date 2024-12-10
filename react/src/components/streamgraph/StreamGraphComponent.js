@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import StreamGraphD3 from './StreamGraph-d3';
-import { getProjectionData } from '../../redux/DataSetSlice';
 import { toggleClassification } from '../../redux/StreamGraphSlice';
+import { getProjectionData, updateSelectedTimeRange, updateSelectedClassifications } from '../../redux/DataSetSlice';
 
-const StreamGraphComponent = () => {
+const StreamGraphComponent = ({ onBrush }) => {
   const data = useSelector((state) => state.dataSet.data || []);
   const selectedClassifications = useSelector(
     (state) => state.streamGraph.selectedClassifications
@@ -24,7 +24,14 @@ const StreamGraphComponent = () => {
   useEffect(() => {
     if (Array.isArray(data) && data.length > 0) {
       if (!streamGraphRef.current) {
+
+        // Set the brushed callback to update Redux state
         streamGraphRef.current = new StreamGraphD3(svgRef.current);
+        
+        streamGraphRef.current.setBrushedCallback(({ range, classifications }) => {
+          dispatch(updateSelectedTimeRange(range));
+          dispatch(updateSelectedClassifications(classifications));
+        });
       }
       // Render the graph with current data and selected classifications
       try {
@@ -33,11 +40,15 @@ const StreamGraphComponent = () => {
         console.error('Error rendering StreamGraph:', error);
       }
     }
-  }, [data, selectedClassifications]);
+  }, [data, selectedClassifications, dispatch]);
 
   // Handle checkbox changes
   const handleCheckboxChange = (classification) => {
     dispatch(toggleClassification(classification));
+     // Clear the brush when a checkbox is toggled
+    if (streamGraphRef.current) {
+      streamGraphRef.current.clearBrush();
+    }
   };
 
   return (

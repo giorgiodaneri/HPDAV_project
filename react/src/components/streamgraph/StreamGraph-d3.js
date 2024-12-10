@@ -1,12 +1,10 @@
 import * as d3 from 'd3';
-// todo:
-// add mapping
-// aggregation
-// 
+
 class StreamGraphD3 {
   constructor(svgElement, sliderElement) {
-
     this.zoomTransform = null; // Store the zoom state
+    this.brushedCallback = null; // Callback for brush events
+    this.currentBrushSelection = null; // Store the current brush selection
     this.classifications = [0, 1, 2, 3, 4];
     this.classifications_labels = ["Generic Protocol Command Decode", "Potential Corporate Privacy Violation", "Misc activity", "Attempted Information Leak", "Potentially Bad Traffic"];
     
@@ -115,25 +113,97 @@ class StreamGraphD3 {
     this.updateChart();
     this.createLegend();
     this.setupZoom();
+    this.setupBrush(); 
+  }
+
+  setBrushedCallback(callback) {
+    this.brushedCallback = callback; // Assign the callback to the instance
   }
   
-
-  setupZoom() {
-    const zoom = d3.zoom()
-      .scaleExtent([1, 10]) // Limit the zoom scale
-      .translateExtent([[0, 0], [this.width, this.height]]) // Limit panning
-      .on('zoom', (event) => this.zoomed(event));
-
-    // Apply zoom to the SVG and retain the zoom state
-    const zoomTarget = d3.select(this.svgElement);
-
-    if (this.zoomTransform) {
-      zoomTarget.call(zoom.transform, this.zoomTransform); // Apply the previous zoom state
+  clearBrush() {
+    console.log("Clearing brush...");
+    if (this.brushGroup) {
+      this.brushGroup.call(d3.brushX().clear);
+      this.currentBrushSelection = null; 
     }
+  }
+  
+  setupBrush() {
+    const brush = d3
+    .brushX()
+    .extent([[0, 0], [this.width, this.height]])
+    .on("start", () => {
+      console.log("Brushing started, disabling zoom");
+      // Disable zooming during brushing
+      d3.select(this.svgElement).on(".zoom", null);
+    })
+    .on("brush", (event) => this.updateBrushedData(event))
+    .on("end", (event) => {
+      this.updateBrushedData(event);
+      console.log("Brushing ended, re-enabling zoom");
+      // Re-enable zooming after brushing
+      this.enableZoom();
+    });
 
-    zoomTarget.call(zoom);
+    this.brushGroup = this.svg.append("g").attr("class", "brush").call(brush);
   }
 
+  updateBrushedData(event) {
+    const selection = event.selection || this.currentBrushSelection;
+  
+    if (!selection) {
+      return;
+    }
+  
+    this.currentBrushSelection = selection; // Save the current brush selection
+    const [startX, endX] = selection.map(this.x.invert); // Convert pixel range to time
+    const selectedRange = [startX.toISOString(), endX.toISOString()];
+  
+    // Filter the classifications based on the brushed range
+    const brushedClassifications = this.stackedSeries
+      .filter((layer) =>
+        layer.some(
+          (d) => d.data.time >= startX && d.data.time <= endX
+        )
+      )
+      .map((layer) => layer.key); // Extract the classification keys
+      //console.log(brushedClassifications);
+      //console.log(selectedRange);
+    if (this.brushedCallback) {
+      this.brushedCallback({ range: selectedRange, classifications: brushedClassifications });
+    }
+  }
+  
+  updateSelectedClassifications(selectedClassifications) {
+    if (!this.data) {
+      console.error("No data available to update classifications");
+      return;
+    }
+  
+    this.render(this.data, selectedClassifications); // Re-render the graph with the updated classifications
+  
+    if (this.currentBrushSelection) {
+      // Reapply the brush logic with the updated classifications
+      this.updateBrushedData({ selection: this.currentBrushSelection });
+    }
+  }
+  
+  setupZoom() {
+    this.zoom = d3
+      .zoom()
+      .scaleExtent([1, 10]) // Limit the zoom scale
+      .translateExtent([[0, 0], [this.width, this.height]]) // Limit panning
+      .on("zoom", (event) => this.zoomed(event));
+  
+    // Apply the zoom behavior initially
+    this.enableZoom();
+  }
+  enableZoom() {
+    d3.select(this.svgElement).call(this.zoom);
+  }
+  disableZoom() {
+    d3.select(this.svgElement).on(".zoom", null); // Remove the zoom behavior
+  }
   zoomed(event) {
     this.zoomTransform = event.transform; // Save the zoom state
     const newX = this.zoomTransform.rescaleX(this.x);
