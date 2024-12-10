@@ -8,8 +8,8 @@ target_classifications = {
 }
 
 # Input and output file paths
-input_file = "MC2-CSVFirewallandIDSlogs/IDSlog.04062012-replacement.txt"
-output_file = "MC2-CSVFirewallandIDSlogs/filtered_IDSlog.txt"
+input_file = "../MC2-CSVFirewallandIDSlogs/IDSlog.04062012-replacement.txt"
+output_file = "../MC2-CSVFirewallandIDSlogs/IDSlog_filtered.txt"
 
 # Read all lines from the file
 with open(input_file, 'r') as infile:

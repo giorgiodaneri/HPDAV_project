@@ -3,7 +3,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 export const getProjectionData = createAsyncThunk('projectionData/fetchData', async () => {
   const response = await fetch('http://localhost:5000/getDataset');
   const responseJson = await response.json();
-
   if (!responseJson.dataset) {
     throw new Error('Dataset is missing in the API response');
   }

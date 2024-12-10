@@ -61,13 +61,13 @@ class StreamGraphD3 {
   render(data) {   
     this.defineClippingPath();
     // Call the function to prepare stacked data
-  
+    console.log("first element: ", data[0]);
     // Parse data: time and classification
     const parseTime = d3.timeParse('%d %H:%M');
     const preparedData = data
       .map((d) => ({
         time: parseTime(d.time),
-        classification: d[" classification"],
+        classification: d["classification"],
       }))
       .filter((d) => d.time !== null && d.classification !== undefined);
 

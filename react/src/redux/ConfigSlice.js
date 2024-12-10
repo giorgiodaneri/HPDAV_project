@@ -3,16 +3,19 @@ import { createSlice } from '@reduxjs/toolkit'
 export const configSlice = createSlice({
   name: 'config',
   initialState: {
-    distance: "euclidean",
+    xAxis : "sourceIP",
+    yAxis : "destIP"
   },
   reducers: {
-    updateDistance: (state, action) => {
-      return {...state, distance:action.payload.distance};
-    },
+    // store data for the heatmap axes
+    generateFromConfig: (state, action) => {
+      state.xAxis = action.payload.xAxis;
+      state.yAxis = action.payload.yAxis;
+    }
   }
 })
 
 // Action creators are generated for each case reducer function
-export const { updateDistance} = configSlice.actions
+export const { generateFromConfig} = configSlice.actions
 
 export default configSlice.reducer

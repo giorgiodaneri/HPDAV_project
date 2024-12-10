@@ -1,19 +1,41 @@
+/* Ensure the whole body and html take up the full height of the screen */
+html, body, #root {
+    height: 100%;
+    margin: 0;
+}
+
+/* The main container (App) takes the full height */
 .App {
     text-align: center;
     height: 100%;
 }
-#control-bar-container{
+
+/* The control bar takes up 10% of the height */
+#control-bar-container {
     height: 10%;
 }
-#view-container{
-    height:80%;
+
+/* The view container takes up 80% of the height (of App) */
+#view-container {
+    height: 90%; /* Adjusted to take up the remaining height */
+    display: flex;
+    flex-direction: column;
 }
+
+/* Make sure the heatmap container fills the available space */
+#heatmap-container {
+    flex: 1; /* This will make it take all available space in the #view-container */
+    width: 100%;
+}
+
+/* Optional: Prevent text overflow or spacing issues with rows and columns */
 .row:after {
     content: "";
     display: table;
     clear: both;
 }
-.col2{
+
+.col2 {
     float: left;
     width: 50%;
 }
