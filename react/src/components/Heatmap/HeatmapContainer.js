@@ -6,6 +6,10 @@ import Heatmap from './Heatmap';
 function HeatmapContainer() {
     const dispatch = useDispatch();
     const data = useSelector((state) => state.dataSet.data);
+    const timeRange = useSelector((state) => state.heatmapConfig.timeRange);
+    const startTime = timeRange[0];
+    const endTime = timeRange[1];
+    const IPcateg = useSelector((state) => state.heatmapConfig.category);
 
     const divContainerRef = useRef(null);
     const HeatmapRef = useRef(null);
@@ -43,11 +47,13 @@ function HeatmapContainer() {
     }, [data])
 
     useEffect(() => {
-        if (timeSlice && data) {
+        if (data && startTime && endTime && IPcateg) {
             const heatmap = HeatmapRef.current;
-            heatmap.renderHeatmap(data, timeSlice, 0);
+            // if IPcateg is equal to suspect, assign 1 to filter variable, else assign 0
+            const filter = IPcateg === "suspect" ? 1 : 0;
+            heatmap.renderHeatmap(data, startTime, endTime, filter);
         }
-    }, [timeSlice]);
+    }, [data, startTime, endTime, IPcateg]);
 
     return (
         <div

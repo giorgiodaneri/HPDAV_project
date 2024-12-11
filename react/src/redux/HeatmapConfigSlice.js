@@ -4,7 +4,7 @@ export const heatmapConfigSlice = createSlice({
   name: 'heatmapConfig',
   initialState: {
     category: "suspect",
-    timeRange: [0, 0],
+    timeRange: ['5 17:55', '7 08:59'],
   },
   reducers: {
     // store data for the heatmap axes
