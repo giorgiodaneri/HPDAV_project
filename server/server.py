@@ -9,6 +9,7 @@ CORS(app)
 
 # insert code for server initialization if needed
 dataset = dataset.get_dataset_IDS()
+# dataset = dataset.get_dataset_firewall()
 
 @app.route("/")
 def hello_world():

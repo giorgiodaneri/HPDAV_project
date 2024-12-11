@@ -1,4 +1,5 @@
 import pandas as pd
+from IPClassification import get_ip_type, get_path_type
 
 def get_dataset():
   """
@@ -64,6 +65,11 @@ def get_dataset_IDS():
 
   # add the priority of the packets
   new_data['priority'] = data[' priority']
+
+  new_data['Source'] = new_data['sourceIP'].apply(get_ip_type)
+  new_data['Destination'] = new_data['destIP'].apply(get_ip_type)
+  new_data['Firewall'] = new_data.apply(lambda row: get_path_type(row['Source'], row['Destination']), axis=1)
+
 
   # NOTE: does not make sense to preserve this entries since they are empty for malicious activities
   # also, does not make sense to map them to numbers since they are too many to reconstruct again

@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import StreamGraphComponent from './components/streamgraph/StreamGraphComponent';
 // here import other dependencies
 import HeatmapContainer from './components/Heatmap/HeatmapContainer';
+import GraphContainer from './components/Graph/GraphContainer';
 
 // a component is a piece of code which render a part of the user interface
 function App() {
