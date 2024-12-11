@@ -8,7 +8,8 @@ app = Flask(__name__)
 CORS(app)
 
 # insert code for server initialization if needed
-dataset = dataset.get_dataset_IDS()
+# dataset = dataset.get_dataset_IDS()
+dataset = dataset.get_dataset_firewall()
 
 @app.route("/")
 def hello_world():
@@ -22,6 +23,10 @@ def get_dataset():
 @app.route("/filterIDS")
 def get_dataset_IDS():
     return {"dataset_IDS": dataset}
+
+@app.route("/filter_firewall")
+def get_dataset_firewall():
+    return {"dataset_firewall": dataset}
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)

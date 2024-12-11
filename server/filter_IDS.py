@@ -1,10 +1,10 @@
 import pandas as pd
 
-# Define the file path
-file_path = '../MC2-CSVFirewallandIDSlogs/IDS-0406.csv'
+# define the file path
+file_path = '../MC2-CSVFirewallandIDSlogs/IDS-0406-replacement.csv'
 file_path2 = '../MC2-CSVFirewallandIDSlogs/IDS-0407.csv'
 
-# Load the first ten rows of the CSV file
+# load the first ten rows of the CSV file
 data = pd.read_csv(file_path)
 data2 = pd.read_csv(file_path2)
 data = pd.concat([data, data2])
@@ -40,16 +40,22 @@ classification_mapping = {value: idx for idx, value in enumerate(classification)
 print("classification mapping: ", classification_mapping)
 print("classification: ", classification)
 # write the classification mapping to a .txt file
-with open('MC2-CSVFirewallandIDSlogs/classification_mapping.txt', 'w') as f:
+with open('../MC2-CSVFirewallandIDSlogs/classification_mapping.txt', 'w') as f:
     for key, value in classification_mapping.items():
         f.write(f'{key}: {value}\n')
 
-# print the relative mapping
-print("classification mapping: ", new_data[' classification'].unique())
-
-
 # add the priority of the packets
 new_data['priority'] = data[' priority']
+
+# add the label by mapping it to a number
+label = data[' label'].unique()
+new_data['label'] = data[' label'].apply(lambda x: label.tolist().index(x))
+
+# write the mapping of the label to a .txt file
+label_mapping = {value: idx for idx, value in enumerate(label)}
+with open('../MC2-CSVFirewallandIDSlogs/label_mapping.txt', 'w') as f:
+    for key, value in label_mapping.items():
+        f.write(f'{key}: {value}\n')
 
 # NOTE: does not make sense to preserve this entries since they are empty for malicious activities
 # also, does not make sense to map them to numbers since they are too many to reconstruct again

@@ -1,11 +1,11 @@
 import pandas as pd
 import re
 
-# Define the file path
+# define the file path
 file_path = '../MC2-CSVFirewallandIDSlogs/Firewall-04062012.csv'
 file_path2 = '../MC2-CSVFirewallandIDSlogs/Firewall-04072012.csv'
 
-# Load the first ten rows of the CSV file
+# load the first ten rows of the CSV file
 data = pd.read_csv(file_path)
 data2 = pd.read_csv(file_path2)
 data = pd.concat([data, data2])

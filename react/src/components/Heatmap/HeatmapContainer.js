@@ -27,6 +27,7 @@ function HeatmapContainer() {
     useEffect(() => {
         // print the first element of the data
         if(data) {
+            console.log(data[0]);
             // Extract unique time slices
             const uniqueTimes = Array.from(new Set(data.map(d => d.time))).sort();
             setTimeSlice(uniqueTimes[0]); // Initialize with the first time slice
