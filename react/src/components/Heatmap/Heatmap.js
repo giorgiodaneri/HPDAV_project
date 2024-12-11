@@ -10,7 +10,10 @@ class Heatmap {
 
     constructor(container) {
         this.container = container;
-        this.svg = d3.select(container).append("svg");
+        this.svg = d3.select(container).select("svg");
+        if (this.svg.empty()) {
+            this.svg = d3.select(container).append("svg");
+        }
     }
 
     create({ size }) {
@@ -22,8 +25,11 @@ class Heatmap {
             .attr("width", this.size.width)
             .attr("height", this.size.height);
 
-        this.heatmapGroup = this.svg.append("g")
-            .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
+        this.heatmapGroup = this.svg.select("g");
+        if (this.heatmapGroup.empty()) {
+            this.heatmapGroup = this.svg.append("g")
+                .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
+        }
     }
 
     clear() {
@@ -123,6 +129,8 @@ class Heatmap {
         .attr("width", xScale.bandwidth())
         .attr("height", yScale.bandwidth())
         .attr("fill", d => colorScale(d.count))
+        // Highlight cells with classification 1,3,4 in red
+        .attr("stroke", d => [1, 3, 4].includes(d.classification) ? "red" : "none")
         .on("mouseover", (event, d) => {
             // Show the tooltip on mouseover
             tooltip.style("visibility", "visible")
@@ -149,6 +157,7 @@ class Heatmap {
         this.heatmapGroup.selectAll(".axis").remove();
         this.heatmapGroup.selectAll(".axis-label").remove();
         this.heatmapGroup.selectAll(".tick").remove();
+        // this.clear();
 
         // Step 6: Add axes
         this.heatmapGroup.append("g")

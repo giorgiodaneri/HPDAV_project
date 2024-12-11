@@ -6,9 +6,11 @@ import Heatmap from './Heatmap';
 function HeatmapContainer() {
     const dispatch = useDispatch();
     const data = useSelector((state) => state.dataSet.data);
+
     const divContainerRef = useRef(null);
     const HeatmapRef = useRef(null);
-    const [timeSlice, setTimeSlice] = useState(null); // Time slice state
+    const [timeSlice, setTimeSlice] = useState(null); 
+    const [isLoading, setIsLoading] = useState(true);
 
     const getCharSize = () => ({
         width: divContainerRef.current.offsetWidth,
@@ -27,10 +29,10 @@ function HeatmapContainer() {
     useEffect(() => {
         // print the first element of the data
         if(data) {
-            console.log(data[0]);
             // Extract unique time slices
             const uniqueTimes = Array.from(new Set(data.map(d => d.time))).sort();
             setTimeSlice(uniqueTimes[0]); // Initialize with the first time slice
+            setIsLoading(false);
 
             const heatmap = HeatmapRef.current;
             heatmap.renderHeatmap(data, uniqueTimes[0]);
@@ -47,7 +49,20 @@ function HeatmapContainer() {
         }
     }, [timeSlice]);
 
-    return <div ref={divContainerRef} className="heatmapDivContainer" style={{ width: '100%', height: '100%' }}></div>;
+    return (
+        <div
+            ref={divContainerRef}
+            className="heatmapDivContainer"
+            style={{ width: '100%', height: '100%', position: 'relative' }}
+        >
+            {isLoading && (
+                <div className="loading-overlay">
+                    <div className="spinner"></div>
+                    <p>Loading data...</p>
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default HeatmapContainer;

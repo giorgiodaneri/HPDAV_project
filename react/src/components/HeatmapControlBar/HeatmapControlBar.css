@@ -1,32 +1,74 @@
 .control-bar-form {
     display: flex;
-    gap: 10px; 
-    align-items: center;    
-}
-
-.first-row {
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .input-group-row {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
     gap: 20px;
-    align-items: center;
-}
-
-.second-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.input-group {
+    width: 100%;
+  }
+  
+  .input-group {
     display: flex;
     flex-direction: column;
     font-size: 14px;
-}
-
-.generate-button {
-    padding: 5px 10px;
-    margin-top: 20px;
+  }
+  
+  .slider-group {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Make the slider grow to take available space */
+    align-items: flex-start;
+  }
+  
+  .time-slider {
+    width: 100%; /* Make the slider fill the width of its container */
+    height: 5px;
+    background: #ddd;
+    position: relative;
+    margin: 10px 0;
+  }
+  
+  .time-slider .thumb {
+    height: 15px;
+    width: 15px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: grab;
+    position: absolute;
+  }
+  
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    width: 100%;
+    margin-top: 5px;  /* Add some space between the slider and labels */
+  }
+  
+  .slider-labels .left {
+    text-align: left;
+    flex: 1;
+  }
+  
+  .slider-labels .right {
+    text-align: right;
+    flex: 1;
+  }
+  
+  .generate-button {
+    padding: 8px 16px;
     font-size: 14px;
     cursor: pointer;
-}
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+  

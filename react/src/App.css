@@ -2,33 +2,54 @@
 html, body, #root {
     height: 100%;
     margin: 0;
+    overflow: hidden; /* Prevent scrollbars from appearing unnecessarily */
 }
 
 /* The main container (App) takes the full height */
 .App {
     text-align: center;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* The control bar takes up 10% of the height */
 #control-bar-container {
     height: 10%;
+    width: 100%;
+    margin-top: 40px;
+    background-color: #f9f9f9; /* Optional: visually differentiate the control bar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* The view container takes up 80% of the height (of App) */
+/* The view container takes up 90% of the height (of App) */
 #view-container {
-    height: 90%; /* Adjusted to take up the remaining height */
+    height: 90%;
     display: flex;
     flex-direction: column;
 }
 
-/* Make sure the heatmap container fills the available space */
-#heatmap-container {
-    flex: 1; /* This will make it take all available space in the #view-container */
-    width: 100%;
+/* Visualization container splits into two equal parts */
+#vis-container {
+    flex: 1; /* Takes up all remaining space after the control bar */
+    display: flex;
+    flex-direction: column;
 }
 
-/* Optional: Prevent text overflow or spacing issues with rows and columns */
+/* Both StreamGraph and Heatmap share space equally */
+.visChild {
+    flex: 1; /* Each child takes up 50% of the height within vis-container */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    overflow: hidden; /* Prevent content overflow */
+    border: 1px solid #ddd; /* Optional: visually separate components */
+}
+
+/* Optional: Prevent text overflow or spacing issues */
 .row:after {
     content: "";
     display: table;
