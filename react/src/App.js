@@ -25,7 +25,6 @@ function App() {
   return (
     <div className="App">
       {console.log("App rendering")}
-      <div id="view-container" className="row">
         {/* Control Bar */}
         <div id="control-container" className="controlRow">
           <div id="control-bar-container" className="controlBar">
@@ -34,15 +33,13 @@ function App() {
         </div>
 
         {/* Visualization Container */}
-        <div id="vis-container" className="visRow">
-          {/* <div id="streamgraph-container" className="visChild">
-            <StreamGraphComponent />
-          </div> */}
-          <div id="heatmap-container" className="visChild">
-            <HeatmapContainer />
-          </div>
+        <div id="row-container">
+              <StreamGraphComponent />
+              <HeatmapContainer />
         </div>
-      </div>
+        <div id="graph-container">
+              <GraphContainer />
+        </div>
     </div>
   );
 }

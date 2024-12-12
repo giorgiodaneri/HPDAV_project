@@ -52,7 +52,7 @@ const StreamGraphComponent = ({ onBrush }) => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
       <h2>Stream Graph</h2>
       <div>You can zoom in!</div>
 
@@ -65,7 +65,7 @@ const StreamGraphComponent = ({ onBrush }) => {
           'Attempted Information Leak',
           'Potentially Bad Traffic',
         ].map((label, index) => (
-          <label key={index} style={{ marginRight: '15px' }}>
+          <label key={index} >
             <input
               type="checkbox"
               checked={selectedClassifications.includes(index)}
@@ -77,7 +77,7 @@ const StreamGraphComponent = ({ onBrush }) => {
       </div>
 
       {/* SVG container for the D3 visualization */}
-      <svg ref={svgRef} style={{ width: '100%', height: '500px' }}></svg>
+      <svg ref={svgRef} style={{ width: '100%', height: '100%' }}></svg>
     </div>
   );
 };

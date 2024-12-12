@@ -1,14 +1,3 @@
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
-.heatmapDivContainer {
-    width: 100%;
-    height: 100vh;
-    display: block;
-}
-
 .tooltip {
     position: absolute;
     visibility: hidden;

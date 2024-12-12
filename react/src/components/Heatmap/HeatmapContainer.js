@@ -56,11 +56,9 @@ function HeatmapContainer() {
     }, [data, startTime, endTime, IPcateg]);
 
     return (
-        <div
-            ref={divContainerRef}
-            className="heatmapDivContainer"
-            style={{ width: '100%', height: '100%', position: 'relative' }}
-        >
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <h2>HeatMap</h2>
+            <div style={{ width: '100%', height: '100%' }} ref={divContainerRef} ></div>
             {isLoading && (
                 <div className="loading-overlay">
                     <div className="spinner"></div>
