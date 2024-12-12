@@ -3,13 +3,13 @@ import { createSlice } from '@reduxjs/toolkit'
 export const heatmapConfigSlice = createSlice({
   name: 'heatmapConfig',
   initialState: {
-    category: "suspect",
+    filters: [0, 1, 2, 3, 4],
     timeRange: ['5 17:55', '7 08:59'],
   },
   reducers: {
     // store data for the heatmap axes
     generateFromConfig: (state, action) => {
-      state.category = action.payload.category;
+      state.filters = action.payload.filters;
       state.timeRange = action.payload.timeRange;
     }
   }

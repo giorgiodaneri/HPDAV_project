@@ -5,7 +5,7 @@ import { getFirewallData } from './redux/FirewallSlice';
 import { useDispatch } from 'react-redux';
 import StreamGraphComponent from './components/Streamgraph/StreamGraphComponent';
 import HeatmapContainer from './components/Heatmap/HeatmapContainer';
-import HeatmapControlBar from './components/HeatmapControlBar/HeatmapControlBar';
+import ControlBar from './components/ControlBar/ControlBar';
 import GraphContainer from './components/Graph/GraphContainer';
 
 // a component is a piece of code which render a part of the user interface
@@ -28,7 +28,7 @@ function App() {
         {/* Control Bar */}
         <div id="control-container" className="controlRow">
           <div id="control-bar-container" className="controlBar">
-            <HeatmapControlBar />
+            <ControlBar />
           </div>
         </div>
 

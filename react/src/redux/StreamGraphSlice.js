@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   selectedClassifications: [0, 1, 2, 3, 4], // All classifications selected by default
   aggregationInterval: 5, // Default aggregation interval (in minutes)
+  generateTrigger: false, // Add trigger for updating the StreamGraph
 };
 
 const streamGraphSlice = createSlice({
@@ -25,6 +26,9 @@ const streamGraphSlice = createSlice({
     updateAggregationInterval(state, action) {
       state.aggregationInterval = action.payload; // Update the aggregation interval
     },
+    triggerGenerate(state) {
+      state.generateTrigger = !state.generateTrigger; // Toggle the trigger to notify updates
+    },
   },
 });
 
@@ -32,6 +36,7 @@ export const {
   toggleClassification,
   resetClassifications,
   updateAggregationInterval,
+  triggerGenerate,
 } = streamGraphSlice.actions;
 
 export default streamGraphSlice.reducer;

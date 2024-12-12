@@ -38,101 +38,81 @@ class Heatmap {
 
     parseTime(timeStr) {
         if (!timeStr || typeof timeStr !== 'string') {
-            // Return a default value (e.g., 0 or NaN) if timeStr is invalid
             console.warn("Invalid or missing time string:", timeStr);
-            return 0; // or return NaN to indicate invalid time
+            return 0;
         }
-    
-        const [day, time] = timeStr.split(" ");  // Split the day and time
+
+        const [day, time] = timeStr.split(" ");
         if (!time || !day) {
             console.warn("Invalid time format:", timeStr);
-            return 0; // Return default value if format is incorrect
+            return 0;
         }
-    
-        const [hours, minutes] = time.split(":").map(Number);  // Split hours and minutes and convert to numbers
+
+        const [hours, minutes] = time.split(":").map(Number);
         if (isNaN(hours) || isNaN(minutes)) {
             console.warn("Invalid time format (hours or minutes are NaN):", timeStr);
-            return 0; // Return default value if time is malformed
+            return 0;
         }
-    
-        // Convert the total time into minutes: (day * 1440 minutes per day) + (hours * 60) + minutes
+
         return day * 1440 + hours * 60 + minutes;
     }
-    
 
-    renderHeatmap(data, startTime, endTime, filter) {
-        // Parse the startTime and endTime to numeric values (in minutes)
+    renderHeatmap(data, startTime, endTime, filters) {
         const parsedStartTime = this.parseTime(startTime);
         const parsedEndTime = this.parseTime(endTime);
-    
-        // Filter data for the specified time range and classification filter
-        const filteredData = filter === 1 ? data.filter(d => {
-            const time = this.parseTime(d.time);  // Parse the time for each data entry
-            return time >= parsedStartTime && time <= parsedEndTime && [1, 3, 4].includes(d.classification);
-        }) : data.filter(d => {
-            const time = this.parseTime(d.time);  // Parse the time for each data entry
-            return time >= parsedStartTime && time <= parsedEndTime;
+
+        const filteredData = data.filter(d => {
+            const time = this.parseTime(d.time);
+            return time >= parsedStartTime && time <= parsedEndTime && filters.includes(d.classification);
         });
-    
-        // Step 1: Process the data
-        // 1.1 Count occurrences of each sourceIP and destIP
+
         const sourceIPCounts = d3.rollup(filteredData, v => v.length, d => d.sourceIP);
         const destIPCounts = d3.rollup(filteredData, v => v.length, d => d.destIP);
-    
-        // 1.2 Get the top 20 sourceIP and destIP based on packet counts
+
         const topSourceIPs = Array.from(sourceIPCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 30)
             .map(d => d[0]);
-    
+
         const topDestIPs = Array.from(destIPCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 30)
             .map(d => d[0]);
-    
-        // 1.3 Create a matrix for the heatmap (sourceIP x destIP)
+
         const matrix = [];
         for (let i = 0; i < topSourceIPs.length; i++) {
             for (let j = 0; j < topDestIPs.length; j++) {
                 const sourceIP = topSourceIPs[i];
                 const destIP = topDestIPs[j];
-    
-                // Filter rows corresponding to the current sourceIP and destIP
+
                 const rows = filteredData.filter(d => d.sourceIP === sourceIP && d.destIP === destIP);
-    
-                // Aggregate the information
-                const count = rows.length; // Number of packets
-                const sourcePort = rows.length > 0 ? rows[0].sourcePort : 'N/A'; // Take first sourcePort
-                const destPort = rows.length > 0 ? rows[0].destPort : 'N/A'; // Take first destPort
-                const classification = rows.length > 0 ? rows[0].classification : 'N/A'; // Take first classification
-    
-                // Push the aggregated data into the matrix
+
+                const count = rows.length;
+                const sourcePort = rows.length > 0 ? rows[0].sourcePort : 'N/A';
+                const destPort = rows.length > 0 ? rows[0].destPort : 'N/A';
+                const classification = rows.length > 0 ? rows[0].classification : 'N/A';
+
                 matrix.push({ sourceIP, destIP, count, sourcePort, destPort, classification, x: i, y: j });
             }
         }
-    
-        // Check if the matrix is empty (no data to display)
+
         if (matrix.length === 0) {
-            // Remove the existing heatmap group if it's there
             this.heatmapGroup.selectAll("*").remove();
-        
-            // Create a container for the message
+
             const messageContainer = this.heatmapGroup.append("g")
                 .attr("transform", `translate(${this.width / 2}, ${this.height / 2})`);
-        
-            // Add a rectangle behind the text with rounded corners
+
             messageContainer.append("rect")
-                .attr("x", -230) // Adjust the x position for centering
-                .attr("y", -55)  // Adjust the y position for centering
+                .attr("x", -230)
+                .attr("y", -55)
                 .attr("width", 460)
                 .attr("height", 100)
-                .attr("rx", 20) // Rounded corners
-                .attr("ry", 20) // Rounded corners
-                .attr("fill", "#f2f2f2") // Light grey background color
-                .attr("stroke", "#ccc") // Light border color
+                .attr("rx", 20)
+                .attr("ry", 20)
+                .attr("fill", "#f2f2f2")
+                .attr("stroke", "#ccc")
                 .attr("stroke-width", 2);
-        
-            // Add the "No data" text inside the rectangle
+
             messageContainer.append("text")
                 .attr("x", 0)
                 .attr("y", 0)
@@ -141,32 +121,27 @@ class Heatmap {
                 .attr("font-weight", "bold")
                 .attr("fill", "black")
                 .text("No data corresponding to the selection");
-        
-            return; // Exit the function early, no need to render the heatmap
-        }
-        else {
-            // Remove the "No data" message if it's there
+
+            return;
+        } else {
             this.heatmapGroup.selectAll("text").remove();
             this.heatmapGroup.selectAll("rect").remove();
         }
-    
-        // Step 2: Set up the color scale with a logarithmic scale
+
         const maxCount = d3.max(matrix, d => d.count);
         const colorScale = d3.scaleSequential(d3.interpolateViridis)
             .domain([0, maxCount]);
-    
-        // Step 3: Create x and y scales for the heatmap
+
         const xScale = d3.scaleBand()
             .domain(topSourceIPs)
             .range([0, this.width])
             .padding(0.05);
-    
+
         const yScale = d3.scaleBand()
             .domain(topDestIPs)
             .range([0, this.height])
             .padding(0.05);
-    
-        // Step 4: Create and configure the tooltip
+
         const tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("position", "absolute")
@@ -176,8 +151,7 @@ class Heatmap {
             .style("border-radius", "5px")
             .style("padding", "5px")
             .style("pointer-events", "none");
-    
-        // Map classification values to human-readable strings
+
         const classificationMap = {
             0: "Generic Protocol Command Decode",
             1: "Potential Corporate Privacy Violation",
@@ -185,8 +159,7 @@ class Heatmap {
             3: "Attempted Information Leak",
             4: "Potentially Bad Traffic"
         };
-    
-        // Step 5: Draw the heatmap cells
+
         this.heatmapGroup.selectAll(".heatmap-cell")
             .data(matrix)
             .join("rect")
@@ -196,11 +169,9 @@ class Heatmap {
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
             .attr("fill", d => colorScale(d.count))
-            // Highlight cells with classification 1,3,4 in red
-            .attr("stroke", d => [1, 3, 4].includes(d.classification) ? "red" : "none")
+            .attr("stroke", d => filters.includes(d.classification) ? "red" : "none")
             .attr("stroke-width", 2)
             .on("mouseover", (event, d) => {
-                // Show the tooltip on mouseover
                 tooltip.style("visibility", "visible")
                     .html(`
                         <strong>Source IP:</strong> ${d.sourceIP}<br>
@@ -212,28 +183,24 @@ class Heatmap {
                     `);
             })
             .on("mousemove", (event) => {
-                // Position the tooltip near the mouse cursor
                 tooltip.style("top", (event.pageY + 10) + "px")
                     .style("left", (event.pageX + 10) + "px");
             })
             .on("mouseout", () => {
-                // Hide the tooltip on mouseout
                 tooltip.style("visibility", "hidden");
             });
-    
-        // Remove the existing axes and axes labels and axes ticks
+
         this.heatmapGroup.selectAll(".axis").remove();
         this.heatmapGroup.selectAll(".axis-label").remove();
         this.heatmapGroup.selectAll(".tick").remove();
-    
-        // Step 6: Add axes
+
         this.heatmapGroup.append("g")
             .attr("transform", `translate(0, ${this.height})`)
             .call(d3.axisBottom(xScale))
             .selectAll("text")
             .style("text-anchor", "end")
             .attr("transform", "rotate(-45)");
-    
+
         this.heatmapGroup.append("g")
             .call(d3.axisLeft(yScale));
     }    
