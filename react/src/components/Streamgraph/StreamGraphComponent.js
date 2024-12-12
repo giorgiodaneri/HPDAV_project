@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import StreamGraphD3 from './StreamGraph-d3';
-import { toggleClassification } from '../../redux/StreamGraphSlice';
+import {
+  toggleClassification,
+  updateAggregationInterval,
+} from '../../redux/StreamGraphSlice';
 import {
   getProjectionData,
   updateSelectedTimeRange,
@@ -13,7 +16,10 @@ const StreamGraphComponent = ({ onBrush }) => {
   const selectedClassifications = useSelector(
     (state) => state.streamGraph.selectedClassifications
   );
-  const timeRange = useSelector((state) => state.heatmapConfig.timeRange); // Get time range from Redux
+  const aggregationInterval = useSelector(
+    (state) => state.streamGraph.aggregationInterval
+  ); // Get aggregation interval from Redux
+  const timeRange = useSelector((state) => state.heatmapConfig.timeRange);
   const startTime = timeRange[0];
   const endTime = timeRange[1];
   const dispatch = useDispatch();
@@ -40,10 +46,16 @@ const StreamGraphComponent = ({ onBrush }) => {
         });
       }
 
-      // Render the graph with the filtered data and selected classifications
-      streamGraphRef.current.render(data, selectedClassifications, startTime, endTime);
+      // Render the graph with the filtered data, selected classifications, and aggregation interval
+      streamGraphRef.current.render(
+        data,
+        selectedClassifications,
+        startTime,
+        endTime,
+        aggregationInterval
+      );
     }
-  }, [data, selectedClassifications, startTime, endTime, dispatch]);
+  }, [data, selectedClassifications, startTime, endTime, aggregationInterval, dispatch]);
 
   // Handle checkbox changes
   const handleCheckboxChange = (classification) => {
@@ -52,6 +64,12 @@ const StreamGraphComponent = ({ onBrush }) => {
     if (streamGraphRef.current) {
       streamGraphRef.current.clearBrush();
     }
+  };
+
+  // Handle aggregation interval change
+  const handleAggregationChange = (event) => {
+    const newInterval = parseInt(event.target.value, 10);
+    dispatch(updateAggregationInterval(newInterval));
   };
 
   return (
@@ -66,6 +84,22 @@ const StreamGraphComponent = ({ onBrush }) => {
     >
       <h2>Stream Graph</h2>
       <div>You can zoom in!</div>
+
+      {/* Dropdown for aggregation interval */}
+      <div>
+        <label htmlFor="aggregation-interval">Aggregation Interval:</label>
+        <select
+          id="aggregation-interval"
+          value={aggregationInterval}
+          onChange={handleAggregationChange}
+        >
+          <option value={1}>1 Minute</option>
+          <option value={5}>5 Minutes</option>
+          <option value={10}>10 Minutes</option>
+          <option value={15}>15 Minutes</option>
+          <option value={60}>60 Minutes</option>
+        </select>
+      </div>
 
       {/* Checkboxes for classifications */}
       <div>

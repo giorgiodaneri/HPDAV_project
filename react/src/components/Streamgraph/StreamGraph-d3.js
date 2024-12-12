@@ -62,16 +62,18 @@ class StreamGraphD3 {
       });
   }
 
-  render(data, selectedClassifications, startTime, endTime) {
+  render(data, selectedClassifications, startTime, endTime, aggregationInterval) {
     this.defineClippingPath();
-    //log startTime
-    console.log("StreamGraphD3 render");
-    console.log("StreamGraphD3 startTime: " + startTime);
-    console.log("StreamGraphD3 endTime: " + endTime);
-
-
   
     const parseTime = d3.timeParse('%d %H:%M');
+    const formatTime = d3.timeFormat('%Y-%m-%d %H:%M');
+    const roundToInterval = (date, intervalMinutes) => {
+      const ms = date.getTime();
+      const intervalMs = intervalMinutes * 60 * 1000;
+      return new Date(Math.floor(ms / intervalMs) * intervalMs);
+    };
+  
+    // Prepare and filter data
     const preparedData = data
       .map((d) => ({
         time: parseTime(d.time),
@@ -81,28 +83,30 @@ class StreamGraphD3 {
         (d) =>
           d.time !== null &&
           d.classification !== undefined &&
-          d.time >= parseTime(startTime) && // Filter by startTime
-          d.time <= parseTime(endTime) // Filter by endTime
+          d.time >= parseTime(startTime) &&
+          d.time <= parseTime(endTime)
       );
   
+    // Group data into intervals based on aggregationInterval
     const groupedData = d3.rollups(
       preparedData,
       (v) => v.length,
-      (d) => d.time,
+      (d) => formatTime(roundToInterval(d.time, aggregationInterval)),
       (d) => d.classification
     );
   
+    // Convert grouped data into a stacked format
     const stackedData = groupedData.map(([time, classData]) => {
       const classMap = new Map(classData);
       return this.classifications.reduce((acc, classification) => {
         acc[classification] = classMap.get(classification) || 0;
-        acc.time = time;
+        acc.time = new Date(time); // Convert time back to Date object
         return acc;
       }, {});
     });
   
-    this.xExtent = d3.extent(preparedData, (d) => d.time);
-  
+    // Update scales and render
+    this.xExtent = d3.extent(stackedData, (d) => d.time);
     this.x = d3.scaleTime().domain(this.xExtent).range([0, this.width]);
   
     this.y = d3
