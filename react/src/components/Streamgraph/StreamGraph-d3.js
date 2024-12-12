@@ -128,7 +128,7 @@ class StreamGraphD3 {
     this.stackedSeries = stackGenerator(stackedData);
   
     this.updateChart();
-    this.createLegend();
+    //this.createLegend();
     this.setupZoom();
     this.setupBrush();
   }
@@ -262,28 +262,41 @@ class StreamGraphD3 {
 
   createLegend() {
     this.svg.select('.legend').remove();
-  
-    const legend = this.svg.append('g')
-      .attr('class', 'legend')
-      .attr('transform', `translate(${this.width + this.margin.right - 350}, ${this.margin.top})`); // placement
-  
+    
+    const legend = d3
+      .select(this.svgElement) // Append the legend outside the main SVG group
+      .append('g')
+      .attr(
+        'transform',
+        `translate(${this.margin.left}, ${this.margin.top - 40})` // Position legend above the plot
+      );
+      
     this.color.domain().forEach((classification, index) => {
-      const legendRow = legend.append('g')
-        .attr('transform', `translate(0, ${index * 20})`); 
+      const legendRow = legend
+    .append('g')
+    .attr(
+      'transform',
+      `translate(${(index % 3) * (300)}, ${
+        Math.floor(index / 3) * (20 )
+      })`
+    )
   
-      legendRow.append('rect')
+      legendRow
+        .append('rect')
         .attr('width', 12)
         .attr('height', 12)
         .attr('fill', this.color(classification));
   
-      legendRow.append('text')
+      legendRow
+        .append('text')
         .attr('x', 20)
         .attr('y', 10)
         .style('font-size', '12px')
-        .style('alignment-baseline', 'middle') 
-        .text(`Classification ${this.classifications_labels[classification]}`);
+        .style('alignment-baseline', 'middle')
+        .text(this.classifications_labels[classification]);
     });
   }
+  
   
   // A clipping path restricts the rendering of graphical elements to a defined region
   // It avoids that parts of the graph move outside the visible viewport when zoomed and panned

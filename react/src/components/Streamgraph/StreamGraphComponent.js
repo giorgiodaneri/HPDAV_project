@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import StreamGraphD3 from './StreamGraph-d3';
+import * as d3 from 'd3';
 import {
   toggleClassification,
   updateAggregationInterval,
@@ -25,6 +26,8 @@ const StreamGraphComponent = ({ onBrush }) => {
   const dispatch = useDispatch();
   const svgRef = useRef();
   const streamGraphRef = useRef();
+
+  const classificationColors = d3.schemeCategory10; // Use D3's color scheme
 
   // Fetch data if it's not already available
   useEffect(() => {
@@ -83,11 +86,12 @@ const StreamGraphComponent = ({ onBrush }) => {
       }}
     >
       <h2>Stream Graph</h2>
+      
       <div>You can zoom in!</div>
 
       {/* Dropdown for aggregation interval */}
       <div>
-        <label htmlFor="aggregation-interval">Aggregation Interval:</label>
+        <label htmlFor="aggregation-interval">Aggregation Interval:   </label>
         <select
           id="aggregation-interval"
           value={aggregationInterval}
@@ -102,7 +106,15 @@ const StreamGraphComponent = ({ onBrush }) => {
       </div>
 
       {/* Checkboxes for classifications */}
-      <div>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap', // Allow wrapping
+          justifyContent: 'flex-start', // Align items to the left
+          paddingTop: '10px', // Add padding around the checkboxes
+          width: '100%', // Ensure full width is used
+        }}
+      >
         {[
           'Generic Protocol Command Decode',
           'Potential Corporate Privacy Violation',
@@ -110,11 +122,19 @@ const StreamGraphComponent = ({ onBrush }) => {
           'Attempted Information Leak',
           'Potentially Bad Traffic',
         ].map((label, index) => (
-          <label key={index}>
+          <label
+            key={index}
+            style={{
+              color: classificationColors[index], // Dynamically set text color
+              marginRight: '20px', // Add spacing between labels
+              cursor: 'pointer', // Make it clear the label is interactive
+            }}
+          >
             <input
               type="checkbox"
               checked={selectedClassifications.includes(index)}
               onChange={() => handleCheckboxChange(index)}
+              style={{ marginRight: '5px' }} // Add spacing between checkbox and label
             />
             {label}
           </label>
