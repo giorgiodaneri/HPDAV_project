@@ -31,47 +31,68 @@ const GraphContainer = () => {
         return time >= startTime && time <= endTime;
       });
 
-      const nodes = new Set();
+      const nodes = new Map();
       const linksMap = {};
-
+      let total_connection = 0;
+      
       filteredData.forEach(row => {
         const sourceIP = row.sourceIP;
         const destIP = row.destIP;
         const firewall = IPmap[row.Firewall];
         // Source,Destination,Firewall
-        const tmpNode_source = {IP: sourceIP, type:row.Source};
-        const tmpNode_destination = {IP: destIP, type:row.Destination};
-        if (firewall != "Unknown") {
-          const tmpNode_firewall = {IP: firewall, type:row.Firewall};
-          nodes.add(tmpNode_firewall);
-        }
-        nodes.add(tmpNode_source);
-        nodes.add(tmpNode_destination);
+        const addUniqueNode = (ip, type) => {
+          if (!nodes.has(ip)) {
+            total_connection += 1;
+            nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0});
+          } else {
+            total_connection += 1;
+            nodes.get(ip).count += 1;
+          }
+        };
+
+        // Add source and destination nodes
+        addUniqueNode(sourceIP, row.Source);
+        addUniqueNode(destIP, row.Destination);
         
+        // Add firewall node if it exists
+        if (firewall != "Unknown") {
+            addUniqueNode(firewall, row.Firewall);
+        }
+        
+        nodes.forEach((node) => {
+          node.total_count = total_connection;
+        });
+
         const addOrUpdateLink = (source, target) => {
           const key = `${source}-${target}`;
           if (linksMap[key]) {
             linksMap[key].value += 1;
           } else {
-            linksMap[key] = { source, target, value: 1 };
+            linksMap[key] = { source: source, target: target, value: 1 , max_value: 0};
           }
         };
 
-        // Aggiungi i collegamenti con pesi
-        if (firewall != 9) {
-          addOrUpdateLink(sourceIP, firewall);
-          addOrUpdateLink(firewall, destIP);
-        } else {
+        // // Aggiungi i collegamenti con pesi
+        // if (firewall != "Unknown") {
+        //   addOrUpdateLink(sourceIP, firewall);
+        //   addOrUpdateLink(firewall, destIP);
+        // } else {
           addOrUpdateLink(sourceIP, destIP);
-        }
+        // }
       });
 
-      // Converti il set di nodi in un array
-      const nodesArray = Array.from(nodes).map(id => ({ id }));
-
-      // Converti linksMap in un array
+      const nodesArray = Array.from(nodes, ([id, value]) => ({ id, value }));
       const linksArray = Object.values(linksMap);
 
+      let max_value = -1;
+      linksArray.forEach(link => {
+        if (link.value > max_value) {
+          max_value = link.value;
+        }
+      });
+      linksArray.forEach(link => {
+        link.max_value = max_value;
+      });
       const newGraph = new GraphD3(svgRef.current);
       newGraph.initializeGraph(nodesArray, linksArray);
       setGraph(newGraph);

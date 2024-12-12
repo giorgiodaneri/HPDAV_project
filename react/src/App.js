@@ -25,21 +25,10 @@ function App() {
   return (
     <div className="App">
       {console.log("App rendering")}
-        {/* Control Bar */}
-        <div id="control-container" className="controlRow">
-          <div id="control-bar-container" className="controlBar">
-            <HeatmapControlBar />
-          </div>
-        </div>
-
-        {/* Visualization Container */}
-        <div id="row-container">
-              <StreamGraphComponent />
-              <HeatmapContainer />
-        </div>
-        <div id="graph-container">
-              <GraphContainer />
-        </div>
+      <div id="view-container" className="row">
+        <StreamGraphComponent />
+        <GraphContainer />
+      </div>
     </div>
   );
 }

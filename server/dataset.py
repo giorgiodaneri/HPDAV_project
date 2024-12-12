@@ -70,7 +70,6 @@ def get_dataset_IDS():
   new_data['Destination'] = new_data['destIP'].apply(get_ip_type)
   new_data['Firewall'] = new_data.apply(lambda row: get_path_type(row['Source'], row['Destination']), axis=1)
 
-
   # NOTE: does not make sense to preserve this entries since they are empty for malicious activities
   # also, does not make sense to map them to numbers since they are too many to reconstruct again
   # # same for packet info and packet info cont'd
