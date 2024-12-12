@@ -3,7 +3,7 @@ import { useEffect} from 'react';
 import { getProjectionData } from './redux/DataSetSlice';
 import { getFirewallData } from './redux/FirewallSlice';
 import { useDispatch } from 'react-redux';
-import StreamGraphComponent from './components/streamgraph/StreamGraphComponent';
+import StreamGraphComponent from './components/Streamgraph/StreamGraphComponent';
 import HeatmapContainer from './components/Heatmap/HeatmapContainer';
 import HeatmapControlBar from './components/HeatmapControlBar/HeatmapControlBar';
 import GraphContainer from './components/Graph/GraphContainer';
