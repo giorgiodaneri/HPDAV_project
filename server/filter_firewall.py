@@ -72,42 +72,34 @@ data["Date/time"] = extracted[0].astype(int).astype(str) + ' ' + extracted[1]
 new_data['Date/time'] = data['Date/time']
 
 # assign to each unique value in the Syslog priority column a number
-new_data['Syslog priority'] = data['Syslog priority'].astype('category').cat.codes
-syslog_priority_mapping = dict(enumerate(data['Syslog priority'].unique()))
-print("\nSyslog priority mapping:")
-for code, priority in syslog_priority_mapping.items():
-    print(f"{priority}: {code}")
+syslog_unique_values = data['Syslog priority'].unique()
+syslog_priority_mapping = {value: idx for idx, value in enumerate(syslog_unique_values)}  
+new_data['Syslog priority'] = data['Syslog priority'].map(syslog_priority_mapping)
 
 # write the syslog priority mapping to a file
 with open('../MC2-CSVFirewallandIDSlogs/syslog_priority_mapping.txt', 'w') as f:
     for code, priority in syslog_priority_mapping.items():
-        f.write(f"{priority}: {code}\n")
+        f.write(f"{code}: {priority}\n")
 
 # select the Operation column and assign a value from 0 to n for each unique value
-new_data['Operation'] = data['Operation'].astype('category').cat.codes
-# print all the unique values of Operation and the corresponding assigned number in the new data frame
-operation_mapping = dict(enumerate(data['Operation'].unique()))
-print("\nOperation mapping:")
-for code, operation in operation_mapping.items():
-    print(f"{operation}: {code}")
+operation_unique_values = data['Operation'].unique()
+operation_mapping = {value: idx for idx, value in enumerate(operation_unique_values)}  
+new_data['Operation'] = data['Operation'].map(operation_mapping)
 
 # write the operation mapping to a file
 with open('../MC2-CSVFirewallandIDSlogs/operation_mapping.txt', 'w') as f:
     for code, operation in operation_mapping.items():
-        f.write(f"{operation}: {code}\n")
+        f.write(f"{code}: {operation}\n")
 
 # select the Message code and assign a number from 0 to n for each unique value
-new_data['Message code'] = data['Message code'].astype('category').cat.codes
-# print all the unique values of Message code and the corresponding assigned number in the new data frame
-message_code_mapping = dict(enumerate(data['Message code'].unique()))
-print("\nMessage code mapping:")
-for code, message in message_code_mapping.items():
-    print(f"{message}: {code}")
+message_code_unique_values = data['Message code'].unique()
+message_code_mapping = {value: idx for idx, value in enumerate(message_code_unique_values)}
+new_data['Message code'] = data['Message code'].map(message_code_mapping)
 
 # write the message code mapping to a file
 with open('../MC2-CSVFirewallandIDSlogs/message_code_mapping.txt', 'w') as f:
     for code, message in message_code_mapping.items():
-        f.write(f"{message}: {code}\n")
+        f.write(f"{code}: {message}\n")
 
 # select the Protocol and assign 0 if TCP and 1 if UDP, 2 to empty values
 new_data['Protocol'] = data['Protocol'].apply(lambda x: 0 if x == 'TCP' else 1 if x == 'UDP' else 2)
@@ -115,7 +107,8 @@ new_data['Protocol'] = data['Protocol'].apply(lambda x: 0 if x == 'TCP' else 1 i
 # write the protocol mapping to a file
 protocol_mapping = {
     "TCP": 0,
-    "UDP": 1
+    "UDP": 1,
+    "": 2
 }
 with open('../MC2-CSVFirewallandIDSlogs/protocol_mapping.txt', 'w') as f:
     for protocol, code in protocol_mapping.items():
@@ -151,8 +144,14 @@ with open('../MC2-CSVFirewallandIDSlogs/direction_mapping.txt', 'w') as f:
     for direction, code in direction_mapping.items():
         f.write(f"{direction}: {code}\n")
 
-# eliminate all the rows where protocol is equal to 2, since Source IP, Destinatio IP are empty too
+# eliminate all the rows where protocol is equal to 2 (empty), since Source IP, Destinatio IP are empty too
 new_data = new_data[new_data['Protocol'] != 2]
+
+# print("Before http removal: ",len(new_data))
+# # now remove all the rows where the Destination service is http
+# new_data = new_data[new_data['Destination service'] != 'http']
+# print("After http removal: ",len(new_data))
+# NOTE: EVENTUALLY, THE REMOVED LOGS CAN BE PUT IN ANOTHER DATASET FOR FURTHER ANALYSIS, IF THEY TURN OUT TO BE SIGNIFICANT
 
 # DO NOT add the Connections built / torn down since it is redundant with the Operation column
 # write new_data to a new CSV file with its own index
