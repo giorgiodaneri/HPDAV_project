@@ -9,14 +9,11 @@ function HeatmapContainer() {
     const data = useSelector((state) => state.dataSet.data);
     const timeRange = useSelector((state) => state.heatmapConfig.timeRange);
     const filters = useSelector((state) => state.heatmapConfig.filters);
-    const selectedCells = useSelector((state) => state.heatmapConfig.selectedCells);
 
     const startTime = timeRange[0];
     const endTime = timeRange[1];
-    const [isCleaned, setIsCleaned] = useState(false); // Use state for `isCleaned`
     const divContainerRef = useRef(null);
     const HeatmapRef = useRef(null);
-    const [timeSlice, setTimeSlice] = useState(null); 
     const [isLoading, setIsLoading] = useState(true);
 
     const getCharSize = () => ({
@@ -37,7 +34,6 @@ function HeatmapContainer() {
     useEffect(() => {
         if (data) {
             const uniqueTimes = Array.from(new Set(data.map((d) => d.time))).sort();
-            setTimeSlice(uniqueTimes[0]);
             setIsLoading(false);
 
             const heatmap = HeatmapRef.current;
@@ -47,20 +43,25 @@ function HeatmapContainer() {
         }
     }, [data, filters]);
 
-    // Update heatmap rendering based on time range, filters, and `isCleaned`
+    // Update heatmap rendering based on time range and filters
     useEffect(() => {
         if (data && startTime && endTime && filters) {
             const heatmap = HeatmapRef.current;
             heatmap.renderHeatmap(data, startTime, endTime, filters);
             setIsLoading(false);
         }
-    }, [data, startTime, endTime, filters, isCleaned]);
+    }, [data, startTime, endTime, filters]);
 
     // Handle Clear Selection
     const handleClearSelection = () => {
         dispatch(clearSelectedCells()); // Clear selected cells in Redux
-        setIsCleaned(true); // Set `isCleaned` to trigger re-render
-        console.log('Selected cells cleared');
+
+        const heatmap = HeatmapRef.current;
+        if (heatmap) {
+            heatmap.renderHeatmap(data, startTime, endTime, filters); // Re-render the heatmap
+        }
+
+        console.log('Selected cells cleared and heatmap re-rendered');
     };
 
     return (
@@ -68,7 +69,14 @@ function HeatmapContainer() {
             <h2>HeatMap</h2>
             <button
                 onClick={handleClearSelection}
-                style={{ marginTop: '10px', padding: '10px 20px', backgroundColor: '#ff5722', color: 'white', border: 'none', borderRadius: '5px' }}>
+                style={{
+                    marginTop: '10px',
+                    padding: '10px 20px',
+                    backgroundColor: '#ff5722',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                }}>
                 Clear Selection
             </button>
             <div style={{ width: '100%', height: '100%' }} ref={divContainerRef}></div>

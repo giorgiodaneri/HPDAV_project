@@ -60,7 +60,6 @@ class Heatmap {
     }
 
     renderHeatmap(data, startTime, endTime, filters) {
-        const selectedCells = store.getState().heatmapConfig.selectedCells; // Retrieve selected cells
         const parsedStartTime = this.parseTime(startTime);
         const parsedEndTime = this.parseTime(endTime);
 
@@ -163,36 +162,39 @@ class Heatmap {
             4: "Potentially Bad Traffic"
         };
 
-        this.heatmapGroup.selectAll(".heatmap-cell")
-            .data(matrix)
-            .join("rect")
+        const cells = this.heatmapGroup.selectAll(".heatmap-cell")
+            .data(matrix, d => `${d.sourceIP}-${d.destIP}`); // Use a unique key to bind data
+
+        // Update existing elements
+        cells
+            .attr("fill", d => colorScale(d.count))
+            .attr("stroke", d => {
+                const isSelected = store.getState().heatmapConfig.selectedCells.some(cell => cell.x === d.x && cell.y === d.y);
+                return isSelected ? "green" : filters.includes(d.classification) ? "red" : "none";
+            })
+            .attr("stroke-width", d => filters.includes(d.classification) ? 2 : 1);
+
+        // Add new elements
+        cells.enter()
+            .append("rect")
             .attr("class", "heatmap-cell")
             .attr("x", d => xScale(d.sourceIP))
             .attr("y", d => yScale(d.destIP))
-            .attr("stroke", d =>  "white")  
             .attr("width", xScale.bandwidth())
             .attr("height", yScale.bandwidth())
             .attr("fill", d => colorScale(d.count))
             .attr("stroke", d => {
                 const isSelected = store.getState().heatmapConfig.selectedCells.some(cell => cell.x === d.x && cell.y === d.y);
-                if (isSelected) {
-                    return "green";
-                }
-                return filters.includes(d.classification) ? "red" : "none";})  
-            .attr("stroke-width", d => filters.includes(d.classification) ? 2 : 1)      
-            .on("click", (event, d) => { 
-                // Dispatch to Redux
+                return isSelected ? "green" : filters.includes(d.classification) ? "red" : "none";
+            })
+            .attr("stroke-width", d => filters.includes(d.classification) ? 2 : 1)
+            .on("click", (event, d) => {
                 store.dispatch(addSelectedCell({ x: d.x, y: d.y, data: d }));
-                // Apply stroke immediately to the clicked cell
                 d3.select(event.target)
                     .attr("stroke", "green")
-                    .attr("stroke-width", 2);      
-                    
-                var c = store.getState().heatmapConfig.selectedCells; // Retrieve selected cells
-                console.log("Selected cells:", c);
-
-              });
-            /*.on("mouseover", (event, d) => {
+                    .attr("stroke-width", 2);
+            })
+            .on("mouseover", (event, d) => {
                 tooltip.style("visibility", "visible")
                     .html(`
                         <strong>Source IP:</strong> ${d.sourceIP}<br>
@@ -209,7 +211,10 @@ class Heatmap {
             })
             .on("mouseout", () => {
                 tooltip.style("visibility", "hidden");
-            });*/
+            });
+
+        // Remove old elements
+        cells.exit().remove();
 
         this.heatmapGroup.selectAll(".axis").remove();
         this.heatmapGroup.selectAll(".axis-label").remove();

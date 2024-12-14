@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   selectedClassifications: [0, 1, 2, 3, 4], // All classifications selected by default
-  aggregationInterval: 5, // Default aggregation interval (in minutes)
+  aggregationInterval: 15, // Default aggregation interval (in minutes)
   generateTrigger: false, // Add trigger for updating the StreamGraph
 };
 
