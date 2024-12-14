@@ -64,11 +64,13 @@ const GraphContainer = () => {
         });
 
         const addOrUpdateLink = (source, target) => {
-          const key = `${source}-${target}`;
-          if (linksMap[key]) {
-            linksMap[key].value += 1;
-          } else {
-            linksMap[key] = { source: source, target: target, value: 1 , max_value: 0};
+          if (target != "172.23.0.10") {
+            const key = `${source}-${target}`;
+            if (linksMap[key]) {
+              linksMap[key].value += 1;
+            } else {
+              linksMap[key] = { source: source, target: target, value: 1 , max_value: 0};
+            }
           }
         };
 
