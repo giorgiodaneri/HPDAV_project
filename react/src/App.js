@@ -39,8 +39,8 @@ function App() {
     }
   }, [data, hasMore]); // Trigger page increment when new data is available
 
-  if (firewallStatus === 'loading') return <p>Loading firewall data...</p>;
-  if (firewallStatus === 'failed') return <p>Error loading firewall data: {error}</p>;
+  // if (firewallStatus === 'loading') return <p>Loading firewall data...</p>;
+  // if (firewallStatus === 'failed') return <p>Error loading firewall data: {error}</p>;
 
   const handleMenuClick = (page) => {
     setCurrentPage(page);
@@ -53,15 +53,21 @@ function App() {
 
       {/* Menu */}
       <div className="menu">
-        <button onClick={() => handleMenuClick('Page1')}>Page 1</button>
-        <button onClick={() => handleMenuClick('Page2')}>Page 2</button>
+       
+      {firewallStatus === 'loading' ? (
+        <p>Loading firewall data...</p>
+      ) : (
+        <>
+          <button onClick={() => handleMenuClick('Page1')}>Page 1</button>
+          <button onClick={() => handleMenuClick('Page2')}>Page 2</button>
+        </>
+      )}
       </div>
 
       {/* Page Content */}
       <div className="page-content">
         {currentPage === 'Page1' && (
           <>
-            <h3>Page 1</h3>
             {/* Control Bar */}
             <div id="control-container" className="controlRow">
               <div id="control-bar-container" className="controlBar">
@@ -81,8 +87,6 @@ function App() {
         )}
         {currentPage === 'Page2' && (
         <>
-          <h3>Page 2</h3>
-          <p>Welcome to Page 2! Add your content here.</p>
           {/* Control Bar */}
           <div id="control-container" className="controlRow">
               <div id="control-bar-container" className="controlBar">

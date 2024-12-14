@@ -43,7 +43,7 @@ html, body {
   display: flex;
   flex-direction: row; /* Ensure items are side-by-side */
   width: 100%;
-  height: 800px; /* Set a consistent height for the containers */
+  height: 100%; /* Set a consistent height for the containers */
   gap: 10px; /* Add a small gap between the two charts */
 }
 
