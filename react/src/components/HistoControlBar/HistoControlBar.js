@@ -16,6 +16,7 @@ function HistoControlBar() {
   const [ipAddress, setIpAddress] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
   const [showAllServices, setShowAllServices] = useState(false);
+  const [showIpToggle, setShowIpToggle] = useState(false);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -65,6 +66,7 @@ function HistoControlBar() {
         dest_services: selectedServices,
         bin_width: binWidth,
         selected_ip: ipAddress,
+        ip_toggle: showIpToggle,
         show_all_services: showAllServices,
       })
     );
@@ -118,7 +120,7 @@ function HistoControlBar() {
           <div className="input-group-row">
             {/* Number of Bins Input */}
             <div className="bins-input">
-              <label htmlFor="bins">Number of Bins</label>
+              <label htmlFor="bins">Bin Width (mins)</label>
               <input
                 id="bins"
                 type="number"
@@ -139,6 +141,20 @@ function HistoControlBar() {
                 onChange={(e) => setIpAddress(e.target.value)}
                 placeholder="Enter IP"
               />
+            </div>
+
+            {/* IP Toggle with Source/Destination Label */}
+            <div className="ip-toggle">
+              <label htmlFor="ipSwitch" className="switch-label">
+                <input
+                  id="ipSwitch"
+                  type="checkbox"
+                  checked={showIpToggle} // Make sure this state is defined (e.g., useState(false))
+                  onChange={(e) => setShowIpToggle(e.target.checked)}
+                />
+                <span className="slider"></span>
+              </label>
+              <span className="toggle-label">Source/Destination</span> {/* Text next to the toggle */}
             </div>
 
               {/* Show All Destination Services Checkbox */}

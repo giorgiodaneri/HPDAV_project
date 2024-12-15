@@ -11,6 +11,7 @@ function HistogramContainer() {
     const timeRange = useSelector((state) => state.histoConfig.timeRange);
     const dest_services = useSelector((state) => state.histoConfig.dest_services);
     const binWidth = useSelector((state) => state.histoConfig.bin_width);
+    const ipToggle = useSelector((state) => state.histoConfig.ip_toggle);
     const selectedIp = useSelector((state) => state.histoConfig.selected_ip);
     const showAllServices = useSelector((state => state.histoConfig.show_all_services));
     const startTime = timeRange[0];
@@ -42,11 +43,11 @@ function HistogramContainer() {
             }
             else {
                 const histogram = histogramRef.current;
-                histogram.renderHistogram(data, binWidth, startTime, endTime, dest_services, selectedIp, showAllServices);
+                histogram.renderHistogram(data, binWidth, startTime, endTime, dest_services, selectedIp, ipToggle, showAllServices);
                 setIsLoading(false);
             }
         }
-    }, [data, startTime, endTime, hasMore, dest_services, binWidth, selectedIp, showAllServices]);
+    }, [data, startTime, endTime, hasMore, dest_services, binWidth, selectedIp, ipToggle, showAllServices]);
 
     return (
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>

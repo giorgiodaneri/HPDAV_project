@@ -104,7 +104,7 @@ class Histogram {
         return `${day} ${time}:00`;
     }
 
-    renderHistogram(data, binWidth, startTime, endTime, dest_services, selected_ip, showAllServices) {
+    renderHistogram(data, binWidth, startTime, endTime, dest_services, selected_ip, ipToggle, showAllServices) {
         this.binWidth = binWidth;
         console.log("Show all services in histo: ", showAllServices);
     
@@ -123,6 +123,19 @@ class Histogram {
                 .text('No service selected');
             return; 
         }
+
+        // Tooltip setup
+        const tooltip = d3.select('body').append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('background-color', '#f9f9f9')
+        .style('border', '1px solid #ccc')
+        .style('border-radius', '4px')
+        .style('padding', '10px')
+        .style('font-size', '12px')
+        .style('font-family', 'Arial, sans-serif')
+        .style('display', 'none')
+        .style('pointer-events', 'none');
     
         // Convert startTime and endTime to include seconds
         const formattedStartTime = this.convertToSecondsFormat(startTime);
@@ -149,11 +162,20 @@ class Histogram {
 
         // Filter data based on selected_ip, if provided
         if (selected_ip.length > 0) {
-            const ipExists = filteredData.some(d => d.destip === selected_ip);
-            if (ipExists) {
-                filteredData = filteredData.filter(d => d.destip === selected_ip);
+            if(ipToggle){
+                const ipExists = filteredData.some(d => d.destip === selected_ip);
+                if (ipExists) {
+                    filteredData = filteredData.filter(d => d.destip === selected_ip);
+                } else {
+                    console.warn("Selected IP does not exist in the data. Falling back to default behavior.");
+                }
             } else {
-                console.warn("Selected IP does not exist in the data. Falling back to default behavior.");
+                const ipExists = filteredData.some(d => d.sourceip === selected_ip);
+                if (ipExists) {
+                    filteredData = filteredData.filter(d => d.sourceip === selected_ip);
+                } else {
+                    console.warn("Selected IP does not exist in the data. Falling back to default behavior.");
+                }
             }
         }
         if(!showAllServices){
