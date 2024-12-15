@@ -27,7 +27,7 @@
 
 /* X and Y axis labels */
 .x-label, .y-label {
-    font-size: 16px;
+    font-size: 18px;
     font-family: 'Times New Roman', Times, sans-serif;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .x-axis text {
-    font-size: 10px;
+    font-size: 12px;
     font-family: Arial, sans-serif;
     text-anchor: middle;
 }
@@ -46,7 +46,7 @@
 }
 
 .y-axis text {
-    font-size: 10px;
+    font-size: 12px;
     font-family: Arial, sans-serif;
     text-anchor: middle;
 }

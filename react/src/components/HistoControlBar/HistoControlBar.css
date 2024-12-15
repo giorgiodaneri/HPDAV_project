@@ -103,3 +103,133 @@
     font-weight: bold;
   }
   
+  .bins-input {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 10px 0;
+  }
+  
+  .bins-input label {
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .bins-input input[type="number"] {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .bins-input input[type="number"]:focus {
+    border-color: #007bff; /* Add a blue border when focused */
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.3); /* Optional shadow for focus */
+  }
+  
+  .bins-input input[type="number"]::placeholder {
+    color: #bbb;
+  }
+  
+  .bins-input input[type="number"]::-webkit-inner-spin-button,
+  .bins-input input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none; /* Hide the spin buttons */
+    margin: 0;
+  }
+  
+  .bins-input input[type="number"]:disabled {
+    background-color: #f9f9f9; /* Lighter background for disabled state */
+    color: #aaa;
+    border-color: #ddd;
+    cursor: not-allowed;
+  }
+
+  .input-group-row {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Space between inputs */
+    margin: 10px 0;
+  }
+  
+  .bins-input, .ip-input {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .bins-input label, .ip-input label {
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .bins-input input[type="number"], .ip-input input[type="text"] {
+    width: 150px; /* Adjust width for consistency */
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .bins-input input:focus, .ip-input input:focus {
+    border-color: #007bff; /* Blue border on focus */
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.3); /* Focus shadow */
+  }
+  
+  .bins-input input::placeholder, .ip-input input::placeholder {
+    color: #bbb;
+  }
+  
+  .bins-input input:disabled, .ip-input input:disabled {
+    background-color: #f9f9f9; /* Light background for disabled state */
+    color: #aaa;
+    border-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+  .input-group-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .bins-input, .ip-input, .show-all-services {
+    display: flex;
+    flex-direction: column;
+    margin-right: 1rem;
+  }
+  
+  .bins-input label, .ip-input label, .show-all-services label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .bins-input input, .ip-input input, .show-all-services input[type="checkbox"] {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .show-all-services label {
+    display: flex;
+    align-items: center;
+  }
+  
+  .show-all-services input[type="checkbox"] {
+    margin-right: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+  }  

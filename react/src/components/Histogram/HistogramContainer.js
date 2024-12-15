@@ -10,8 +10,9 @@ function HistogramContainer() {
     const hasMore = useSelector((state) => state.firewallDataSet.hasMore);
     const timeRange = useSelector((state) => state.histoConfig.timeRange);
     const dest_services = useSelector((state) => state.histoConfig.dest_services);
-    const displayFirewall = useSelector((state) => state.histoConfig.firewall_ips);
-
+    const binWidth = useSelector((state) => state.histoConfig.bin_width);
+    const selectedIp = useSelector((state) => state.histoConfig.selected_ip);
+    const showAllServices = useSelector((state => state.histoConfig.show_all_services));
     const startTime = timeRange[0];
     const endTime = timeRange[1];
     const divContainerRef = useRef(null);
@@ -35,17 +36,17 @@ function HistogramContainer() {
 
     // Update histogram rendering based on time range and filters
     useEffect(() => {
-        if (data && startTime && endTime && dest_services) {
+        if (data && startTime && endTime && dest_services && binWidth) {
             if(hasMore && hasMore === true){
                 setIsLoading(true);
             }
             else {
                 const histogram = histogramRef.current;
-                histogram.renderHistogram(data, 20, startTime, endTime, displayFirewall, dest_services);
+                histogram.renderHistogram(data, binWidth, startTime, endTime, dest_services, selectedIp, showAllServices);
                 setIsLoading(false);
             }
         }
-    }, [data, startTime, endTime, hasMore, displayFirewall, dest_services]);
+    }, [data, startTime, endTime, hasMore, dest_services, binWidth, selectedIp, showAllServices]);
 
     return (
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>

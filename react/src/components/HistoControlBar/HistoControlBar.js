@@ -8,18 +8,14 @@ import * as d3 from "d3";
 
 function HistoControlBar() {
   const dispatch = useDispatch();
-  const selectedClassifications = useSelector(
-    (state) => state.streamGraph.selectedClassifications
-  );
   const data = useSelector((state) => state.dataSet.data);
   const dataFirewall = useSelector((state) => state.firewallDataSet.data);
-
   const [timeRange, setTimeRange] = useState([0, 0]);
   const [sliderValues, setSliderValues] = useState([0, 0]);
-  const [displayFirewall, setDisplayFirewall] = useState(false);
+  const [binWidth, setBinWidth] = useState(10);
+  const [ipAddress, setIpAddress] = useState("");
   const [selectedServices, setSelectedServices] = useState([]);
-
-  const classificationColors = d3.schemeCategory10;
+  const [showAllServices, setShowAllServices] = useState(false);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -45,15 +41,11 @@ function HistoControlBar() {
     return `${day} ${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
   };
 
-  const handleCheckboxChange = (index) => {
-    dispatch(toggleClassification(index));
-  };
-
   // initialize all the services
   useEffect(() => {
     if (dataFirewall.length > 0) {
       const initialServices = Array.from(new Set(dataFirewall.map((d) => d.dest_service)))
-        .filter((service) => !service.includes("_")); // Exclude services with "_"
+        .filter((service) => !service.includes("_") && !["domain", "telnet", "https", "kpop"].includes(service)); // Exclude services with "_"
       setSelectedServices(initialServices); // Set all services as selected by default
     }
   }, [dataFirewall]); // Runs when dataFirewall changes  
@@ -70,8 +62,10 @@ function HistoControlBar() {
     dispatch(
       updateConfig({
         timeRange: sliderValues.map(formatTime),
-        firewall_ips: displayFirewall,
         dest_services: selectedServices,
+        bin_width: binWidth,
+        selected_ip: ipAddress,
+        show_all_services: showAllServices,
       })
     );
   };
@@ -121,17 +115,46 @@ function HistoControlBar() {
             <span className="right">{formatTime(sliderValues[1])}</span>
           </div>
 
-          {/* <div className="firewall-checkbox">
-            <label>
+          <div className="input-group-row">
+            {/* Number of Bins Input */}
+            <div className="bins-input">
+              <label htmlFor="bins">Number of Bins</label>
               <input
-                type="checkbox"
-                checked={displayFirewall}
-                onChange={(e) => setDisplayFirewall(e.target.checked)}
-                style={{ marginTop: "5px" }}
+                id="bins"
+                type="number"
+                min="0"
+                value={binWidth}
+                onChange={(e) => setBinWidth(e.target.value === "" ? "" : Math.max(0, parseInt(e.target.value)))}
+                placeholder="0"
               />
-              Display Firewall
-            </label>
-          </div> */}
+            </div>
+
+            {/* IP Address Input */}
+            <div className="ip-input">
+              <label htmlFor="ipAddress">IP Address</label>
+              <input
+                id="ipAddress"
+                type="text"
+                value={ipAddress}
+                onChange={(e) => setIpAddress(e.target.value)}
+                placeholder="Enter IP"
+              />
+            </div>
+
+              {/* Show All Destination Services Checkbox */}
+            <div className="show-all-services">
+              <label htmlFor="showAllServices">
+                <input
+                  id="showAllServices"
+                  type="checkbox"
+                  checked={showAllServices}
+                  onChange={(e) => setShowAllServices(e.target.checked)}
+                />
+                Show All Destination Services
+              </label>
+            </div>
+          </div>
+
         </div>
 
         <div className="button-container">

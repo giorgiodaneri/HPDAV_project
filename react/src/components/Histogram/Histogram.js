@@ -104,9 +104,26 @@ class Histogram {
         return `${day} ${time}:00`;
     }
 
-    renderHistogram(data, binWidth, startTime, endTime, displayFirewall, dest_services) {
+    renderHistogram(data, binWidth, startTime, endTime, dest_services, selected_ip, showAllServices) {
         this.binWidth = binWidth;
-
+        console.log("Show all services in histo: ", showAllServices);
+    
+        // Clear all existing elements before rerendering
+        this.chart.selectAll('*').remove();
+    
+        if (dest_services.length === 0 || binWidth === 0) {
+            // Show a message when no services are selected or the bin width is 0
+            this.chart.append('text')
+                .attr('x', this.width / 2)
+                .attr('y', this.height / 2)
+                .attr('text-anchor', 'middle')
+                .style('font-size', '16px')
+                .style('fill', 'gray')
+                .style('font-family', 'Arial, sans-serif')
+                .text('No service selected');
+            return; 
+        }
+    
         // Convert startTime and endTime to include seconds
         const formattedStartTime = this.convertToSecondsFormat(startTime);
         const formattedEndTime = this.convertToSecondsFormat(endTime);
@@ -129,16 +146,26 @@ class Histogram {
             protocol: d.protocol,
             action: d.action
         })).filter(d => !isNaN(d.time));
-        console.log("Dest services: ", dest_services);
-        
-        filteredData = filteredData.filter(d => {
-            const serviceFilter = dest_services.length === 0 || dest_services.includes(d.dest_service);
-            const excludeServices = !['telnet', 'https', 'domain', 'kpop'].includes(d.dest_service);
-            return serviceFilter && excludeServices;
-        });
+
+        // Filter data based on selected_ip, if provided
+        if (selected_ip.length > 0) {
+            const ipExists = filteredData.some(d => d.destip === selected_ip);
+            if (ipExists) {
+                filteredData = filteredData.filter(d => d.destip === selected_ip);
+            } else {
+                console.warn("Selected IP does not exist in the data. Falling back to default behavior.");
+            }
+        }
+        if(!showAllServices){
+            filteredData = filteredData.filter(d => {
+                const serviceFilter = dest_services.length === 0 || dest_services.includes(d.dest_service);
+                return serviceFilter;
+            });
+        }
         const timeValues = filteredData.map(d => d.time);
         const timeInRange = timeValues.filter(time => time >= parsedStartTime && time <= parsedEndTime);
-    
+        const uniqueDestServices = Array.from(new Set(filteredData.map(d => d.dest_service)));
+
         const x = d3.scaleLinear()
             .domain(d3.extent(timeInRange)) // Set domain based on the data extent
             .range([0, this.width]);
@@ -157,125 +184,135 @@ class Histogram {
                 d => d.dest_service
             );
         });
-
+    
         const customColors = [
             '#1f77b4', '#ff0000', '#2ca02c', '#d62728', '#9467bd',
             '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
             '#8a2be2', '#ff6347', '#32cd32'
         ];
-        // Define color scale for dest_services
-        const colorScale = d3.scaleOrdinal(customColors).domain(dest_services);
+        
+        let colorScale = d => '#32cd32'; // Default color (gray) if not enough services
+        if (uniqueDestServices.length <= 13) {
+            colorScale = d3.scaleOrdinal(customColors).domain(uniqueDestServices);
+        }
 
         // Calculate the max stacked height for y-axis scaling
         const maxStackHeight = d3.max(bins, bin =>
             d3.sum([...bin.groups.values()].map(group => group.length))
         );
-
+    
         const y = d3.scaleLinear()
             .domain([0, maxStackHeight])
             .range([this.height, 0]);
-
+    
         const xAxis = d3.axisBottom(x)
             .ticks(15)
             .tickFormat(d => this.formatTime(d));
-
+    
         const yAxis = d3.axisLeft(y).ticks(5);
-
-        // clear old axis
-        this.chart.selectAll('.x-axis').selectAll('*').remove();
-        this.chart.selectAll('.y-axis').selectAll('*').remove();
-
-        this.chart.select('.x-axis').call(xAxis).selectAll('text').attr('transform', 'rotate(-45)').style('text-anchor', 'end');
-        this.chart.select('.y-axis').call(yAxis).selectAll('text').attr('transform', 'translate(-10,0)');
-        this.chart.select('.x-label').attr('x', this.width / 2).attr('y', this.height + this.margin.bottom - 2);
-        // translate y label to the left
-        this.chart.select('.y-label').attr('x', -this.height / 2).attr('y', -this.margin.left + 10);
-
-        // remove any previous element
-        this.chart.selectAll('.bar-group').remove();
-        
+    
+        // Create axes
+        this.chart.append('g')
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0, ${this.height})`)
+            .call(xAxis)
+            .selectAll('text')
+            .attr('transform', 'rotate(-45)')
+            .style('text-anchor', 'end');
+    
+        this.chart.append('g')
+            .attr('class', 'y-axis')
+            .call(yAxis)
+            .selectAll('text')
+            .attr('transform', 'translate(-10,0)')
+    
+        // Add labels
+        this.chart.append('text')
+            .attr('class', 'x-label')
+            .attr('x', this.width / 2)
+            .attr('y', this.height + this.margin.bottom - 2)
+            .style('text-anchor', 'middle')
+            .text('Time');
+    
+        this.chart.append('text')
+            .attr('class', 'y-label')
+            .attr('x', -this.height / 2)
+            .attr('y', -this.margin.left + 10)
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'middle')
+            .text('Count');
+    
         // Bind bins to bar groups
         const barGroups = this.chart.selectAll('.bar-group')
-        .data(bins, d => d.x0); // Use `x0` as key for binding
-
-        // Handle exit: Remove old elements and their children
-        barGroups.exit().selectAll('rect').remove(); // Clear child elements
-        barGroups.exit().remove(); // Remove the group itself
-
+            .data(bins, d => d.x0); // Use `x0` as key for binding
+    
         // Handle enter: Append new bar groups
         const newBarGroups = barGroups.enter()
             .append('g')
             .attr('class', 'bar-group')
             .attr('transform', d => `translate(${x(d.x0)}, 0)`);
-
+    
         // Handle enter + update: Add or update stacked rectangles within each bar group
         newBarGroups.merge(barGroups)
-        .selectAll('rect')
-        .data(d => {
-            let cumulativeHeight = 0;
-            return [...d.groups.entries()].map(([service, group]) => {
-                const count = group.length;
-                const yStart = cumulativeHeight;
-                cumulativeHeight += count;
-                return { service, count, yStart, x0: d.x0, x1: d.x1 };
-            });
-        })
-        .join(
-            enter => enter.append('rect')
-                .attr('x', 0)
-                .attr('y', d => y(d.yStart + d.count))
-                .attr('width', d => {
-                    const x0 = x(d.x0) || 0;
-                    const x1 = x(d.x1) || 0;
-                    return Math.max(0, x1 - x0 - 1);
-                })
-                .attr('height', d => y(d.yStart) - y(d.yStart + d.count))
-                .style('fill', d => colorScale(d.service)),
-            update => update // Update existing bars
-                .attr('y', d => y(d.yStart + d.count))
-                .attr('width', d => {
-                    const x0 = x(d.x0) || 0;
-                    const x1 = x(d.x1) || 0;
-                    return Math.max(0, x1 - x0 - 1);
-                })
-                .attr('height', d => y(d.yStart) - y(d.yStart + d.count))
-                .style('fill', d => colorScale(d.service)),
-            exit => exit.remove() // Ensure old rects are removed
-        );
+            .selectAll('rect')
+            .data(d => {
+                let cumulativeHeight = 0;
+                return [...d.groups.entries()].map(([service, group]) => {
+                    const count = group.length;
+                    const yStart = cumulativeHeight;
+                    cumulativeHeight += count;
+                    return { service, count, yStart, x0: d.x0, x1: d.x1 };
+                });
+            })
+            .join(
+                enter => enter.append('rect')
+                    .attr('x', 0)
+                    .attr('y', d => y(d.yStart + d.count))
+                    .attr('width', d => {
+                        const x0 = x(d.x0) || 0;
+                        const x1 = x(d.x1) || 0;
+                        return Math.max(0, x1 - x0 - 1);
+                    })
+                    .attr('height', d => y(d.yStart) - y(d.yStart + d.count))
+                    .style('fill', d => colorScale(d.service)),
+                update => update
+                    .attr('y', d => y(d.yStart + d.count))
+                    .attr('width', d => {
+                        const x0 = x(d.x0) || 0;
+                        const x1 = x(d.x1) || 0;
+                        return Math.max(0, x1 - x0 - 1);
+                    })
+                    .attr('height', d => y(d.yStart) - y(d.yStart + d.count))
+                    .style('fill', d => colorScale(d.service)),
+                exit => exit.remove()
+            );
+    
+        // Add legend if there are 13 or more services
+        if (uniqueDestServices.length <= 13) {
+            const legend = this.chart.append('g')
+                .attr('class', 'legend')
+                .attr('transform', `translate(-45, -20)`);
 
-        // clear old legend
-        this.chart.selectAll('.legend').remove();
+            const legendItems = legend.selectAll('.legend-item')
+                .data(uniqueDestServices)
+                .enter().append('g')
+                .attr('class', 'legend-item')
+                .attr('transform', (d, i) => `translate(${i * 90}, 0)`);
 
-        // Get the unique services that appear in the filtered data
-        const usedServices = Array.from(new Set(filteredData.map(d => d.dest_service)))
-            .filter(service => !['telnet', 'https', 'domain', 'kpop'].includes(service));
+            legendItems.append('rect')
+                .attr('width', 12)
+                .attr('height', 12)
+                .style('fill', d => colorScale(d));
 
-        // Create the legend in the upper-left corner
-        const legend = this.chart.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(-45, -20)`);  // Adjust position as needed
-
-        // Add legend items
-        const legendItems = legend.selectAll('.legend-item')
-            .data(usedServices)  // Use only the services present in filteredData
-            .enter().append('g')
-            .attr('class', 'legend-item')
-            .attr('transform', (d, i) => `translate(${i * 65}, 0)`); 
-
-
-        legendItems.append('rect')
-            .attr('width', 12)
-            .attr('height', 12)
-            .style('fill', d => colorScale(d));
-
-        legendItems.append('text')
-            .attr('x', 15)
-            .attr('y', 7)
-            .style('font-size', '10px')
-            .style('font-family', 'Arial')
-            .attr('dy', '.35em')
-            .text(d => d);
-    }
+            legendItems.append('text')
+                .attr('x', 15)
+                .attr('y', 7)
+                .style('font-size', '14px')
+                .style('font-family', 'Arial')
+                .attr('dy', '.35em')
+                .text(d => d);
+        }
+    }    
 }
 
 export default Histogram;
