@@ -77,7 +77,7 @@ function HistoControlBar() {
   };
 
   const uniqueServices = Array.from(new Set(dataFirewall.map((d) => d.dest_service)))
-  .filter((service) => !service.includes("_"));
+    .filter((service) => !service.includes("_") && !["domain", "telnet", "https", "kpop"].includes(service));
 
   return (
     <form className="control-bar-form" onSubmit={handleOnSubmit}>
@@ -121,7 +121,7 @@ function HistoControlBar() {
             <span className="right">{formatTime(sliderValues[1])}</span>
           </div>
 
-          <div className="firewall-checkbox">
+          {/* <div className="firewall-checkbox">
             <label>
               <input
                 type="checkbox"
@@ -131,7 +131,7 @@ function HistoControlBar() {
               />
               Display Firewall
             </label>
-          </div>
+          </div> */}
         </div>
 
         <div className="button-container">

@@ -5,7 +5,7 @@ export const histoConfigSlice = createSlice({
   initialState: {
     timeRange: ['5 17:55', '7 08:59'],
     firewall_ips: false,
-    dest_services: []
+    dest_services: ['http', 'ftp', 'pptp', 'ms-sql-s', 'ms-sql-m', 'ingreslock', 'netbios-ns', 'netbios-dgm', 'syslog', 'knetd', 'auth', 'wins']
   },
   reducers: {
     updateConfig: (state, action) => {

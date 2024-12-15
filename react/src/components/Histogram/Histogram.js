@@ -131,11 +131,11 @@ class Histogram {
         })).filter(d => !isNaN(d.time));
 
         
-        filteredData = displayFirewall ? filteredData.filter(d => d.destip === '172.23.0.1' || d.destip === '10.32.0.1') : filteredData;
-        if (dest_services.length > 0) {
-            filteredData = filteredData.filter(d => dest_services.includes(d.dest_service));
-        }
-
+        filteredData = filteredData.filter(d => {
+            const serviceFilter = dest_services.length === 0 || dest_services.includes(d.dest_service);
+            // const firewallFilter = !displayFirewall || d.destip === '172.23.0.1' || d.destip === '10.32.0.1';
+            return serviceFilter;
+        });
         const timeValues = filteredData.map(d => d.time);
         const timeInRange = timeValues.filter(time => time >= parsedStartTime && time <= parsedEndTime);
     
@@ -158,8 +158,13 @@ class Histogram {
             );
         });
 
+        const customColors = [
+            '#1f77b4', '#ff0000', '#2ca02c', '#d62728', '#9467bd',
+            '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+            '#8a2be2', '#ff6347', '#32cd32', '#ffdd00', '#ff00d9' 
+        ];
         // Define color scale for dest_services
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(dest_services);
+        const colorScale = d3.scaleOrdinal(customColors).domain(dest_services);
 
         // Calculate the max stacked height for y-axis scaling
         const maxStackHeight = d3.max(bins, bin =>
@@ -183,6 +188,8 @@ class Histogram {
         this.chart.select('.x-axis').call(xAxis).selectAll('text').attr('transform', 'rotate(-45)').style('text-anchor', 'end');
         this.chart.select('.y-axis').call(yAxis).selectAll('text').attr('transform', 'translate(-10,0)');
         this.chart.select('.x-label').attr('x', this.width / 2).attr('y', this.height + this.margin.bottom - 2);
+        // translate y label to the left
+        this.chart.select('.y-label').attr('x', -this.height / 2).attr('y', -this.margin.left + 10);
 
         // remove any previous element
         this.chart.selectAll('.bar-group').remove();
@@ -235,6 +242,39 @@ class Histogram {
                 .style('fill', d => colorScale(d.service)),
             exit => exit.remove() // Ensure old rects are removed
         );
+
+        // clear old legend
+        this.chart.selectAll('.legend').remove();
+
+        // Get the unique services that appear in the filtered data
+        const usedServices = Array.from(new Set(filteredData.map(d => d.dest_service)))
+            .filter(service => !['telnet', 'https', 'domain', 'kpop'].includes(service));
+
+        // Create the legend in the upper-left corner
+        const legend = this.chart.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(-45, -20)`);  // Adjust position as needed
+
+        // Add legend items
+        const legendItems = legend.selectAll('.legend-item')
+            .data(usedServices)  // Use only the services present in filteredData
+            .enter().append('g')
+            .attr('class', 'legend-item')
+            .attr('transform', (d, i) => `translate(${i * 65}, 0)`); 
+
+
+        legendItems.append('rect')
+            .attr('width', 12)
+            .attr('height', 12)
+            .style('fill', d => colorScale(d));
+
+        legendItems.append('text')
+            .attr('x', 15)
+            .attr('y', 7)
+            .style('font-size', '10px')
+            .style('font-family', 'Arial')
+            .attr('dy', '.35em')
+            .text(d => d);
     }
 }
 
