@@ -17,16 +17,10 @@ const GraphContainer = () => {
   useEffect(() => {
     if (brushedRange && data.length > 0) {
       const [startTime, endTime] = brushedRange.map((time) => new Date(time));
-      console.log("Start time: " + startTime);
-      console.log("End time: " + endTime);
-      console.log("Start filtering -------------------");
       const filteredData = data.filter((d) => {
         const parseCustomDate = (input) => {
-          if (input == "6 7:15"){
-            console.log("Range found");
-          }
-          const [day, time] = input.split(" "); // Divide il giorno e l'orario
-          const [hour, minute] = time.split(":"); // Divide l'orario in ore e minuti
+          const [day, time] = input.split(" "); 
+          const [hour, minute] = time.split(":"); 
           return new Date(`1900-01-${day.padStart(2, "0")}T${hour.padStart(2, "0")}:${minute}:00+01:00`); // Costruisce un ISO 8601
         };
         const time = parseCustomDate(d.time);
@@ -113,7 +107,7 @@ const GraphContainer = () => {
   }, [brushedRange, data, dispatch]);
 
   useEffect(() => {
-    if (graph && selectedCells.length > 0) {
+    if (graph) {
       graph.highlightNodesByIP(selectedCells);
     }
   }, [selectedCells, graph]);

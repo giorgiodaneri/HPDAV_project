@@ -46,7 +46,7 @@ class GraphD3 {
             node.color = d3.color(colorMap[node.value.type]);
           }
           else{
-            node.r = Math.min(500 * (node.value.dns_connection / node.value.total_dns_connection), 20);
+            node.r = Math.min(nodeWidthConstantMap[4] * (node.value.dns_connection / node.value.total_dns_connection), 20);
             node.r = Math.max(node.r, 4);
             node.opacity = 0.6;
             node.color = d3.color(colorMap[8]);
@@ -255,8 +255,9 @@ class GraphD3 {
   showTooltip(event, d) {
     this.tooltip.html(`
       <strong>IP:</strong> ${d.id}<br>
-      <strong>Connections:</strong> ${d.value.count}<br>
+      <strong>External connections:</strong> ${d.value.count}<br>
       <strong>DNS connections:</strong> ${d.value.dns_connection}<br>
+      
       `)
       .style('visibility', 'visible')
       .style('top', (event.pageY - 10) + 'px')

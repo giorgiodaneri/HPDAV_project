@@ -32,12 +32,14 @@ const StreamGraphComponent = ({ onBrush }) => {
     if (Array.isArray(data) && data.length > 0) {
       if (!streamGraphRef.current) {
         streamGraphRef.current = new StreamGraphD3(svgRef.current);
-
         // Set the brushed callback to update Redux state
         streamGraphRef.current.setBrushedCallback(({ range }) => {
           dispatch(updateSelectedTimeRange(range));
         });
       }
+
+      // Clear the brush before rendering the graph
+      streamGraphRef.current.clearBrush();
 
       // Render the graph with the filtered data and aggregation interval
       streamGraphRef.current.render(
@@ -49,6 +51,20 @@ const StreamGraphComponent = ({ onBrush }) => {
       );
     }
   }, [data, filters, startTime, endTime, aggregationInterval, dispatch]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && streamGraphRef.current) {
+        streamGraphRef.current.clearBrush();
+        dispatch(updateSelectedTimeRange([startTime, endTime]));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [startTime, endTime, dispatch]);
 
   const handleAggregationChange = (event) => {
     const newInterval = parseInt(event.target.value, 10);

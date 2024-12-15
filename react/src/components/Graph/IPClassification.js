@@ -12,10 +12,10 @@ const colorMap = {
 };
 const nodeWidthConstantMap = {
   0: 10,
-  1: 800,
+  1: 500,
   2: 10,
   3: 10,
-  4: 100,
+  4: 1000,
   5: 10,
   6: 10,
   7: 4000,
