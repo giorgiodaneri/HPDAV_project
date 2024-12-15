@@ -3,12 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateGraphData } from '../../redux/GraphSlice';
 import GraphD3 from './Graph-D3';
 import IPmap from './IPMaps';
+import { addSelectedCell } from '../../redux/HeatmapConfigSlice';
 
 
 const GraphContainer = () => {
   const dispatch = useDispatch();
   const brushedRange = useSelector((state) => state.dataSet.selectedTimeRange);
   const data = useSelector((state) => state.dataSet.data || []);
+  const selectedCells = useSelector((state) => state.heatmapConfig.selectedCells);
   const svgRef = useRef();
   const [graph, setGraph] = useState(null);
 
@@ -28,7 +30,7 @@ const GraphContainer = () => {
           return new Date(`1900-01-${day.padStart(2, "0")}T${hour.padStart(2, "0")}:${minute}:00+01:00`); // Costruisce un ISO 8601
         };
         const time = parseCustomDate(d.time);
-        return time >= startTime && time <= endTime;
+        return (time >= startTime && time <= endTime );
       });
 
       const nodes = new Map();
@@ -38,26 +40,34 @@ const GraphContainer = () => {
       filteredData.forEach(row => {
         const sourceIP = row.sourceIP;
         const destIP = row.destIP;
-        const firewall = IPmap[row.Firewall];
+        const destination = row.Destination;
+
         // Source,Destination,Firewall
         const addUniqueNode = (ip, type) => {
           if (!nodes.has(ip)) {
-            total_connection += 1;
-            nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0});
+            if (destination === 4) {
+              nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0, dns_connection: 1});
+            }
+            else {
+              nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0, dns_connection: 0});
+              total_connection += 1;
+            }
           } else {
-            total_connection += 1;
-            nodes.get(ip).count += 1;
+            if (destination === 4) {
+              nodes.get(ip).dns_connection += 1;
+            }
+            else{
+              total_connection += 1;
+              nodes.get(ip).count += 1;
+            }
           }
         };
 
         // Add source and destination nodes
         addUniqueNode(sourceIP, row.Source);
-        addUniqueNode(destIP, row.Destination);
+        if (destination !== 4)
+          addUniqueNode(destIP, row.Destination);
         
-        // Add firewall node if it exists
-        if (firewall != "Unknown") {
-            addUniqueNode(firewall, row.Firewall);
-        }
         
         nodes.forEach((node) => {
           node.total_count = total_connection;
@@ -73,14 +83,8 @@ const GraphContainer = () => {
             }
           }
         };
+        addOrUpdateLink(sourceIP, destIP);
 
-        // // Aggiungi i collegamenti con pesi
-        // if (firewall != "Unknown") {
-        //   addOrUpdateLink(sourceIP, firewall);
-        //   addOrUpdateLink(firewall, destIP);
-        // } else {
-          addOrUpdateLink(sourceIP, destIP);
-        // }
       });
 
       const nodesArray = Array.from(nodes, ([id, value]) => ({ id, value }));
@@ -98,11 +102,16 @@ const GraphContainer = () => {
       const newGraph = new GraphD3(svgRef.current);
       newGraph.initializeGraph(nodesArray, linksArray);
       setGraph(newGraph);
-
-
+      
       dispatch(updateGraphData(data));
     }
   }, [brushedRange, data, dispatch]);
+
+  useEffect(() => {
+    if (graph && selectedCells.length > 0) {
+      graph.highlightNodesByIP(selectedCells);
+    }
+  }, [selectedCells, graph]);
 
   return (
     <div>

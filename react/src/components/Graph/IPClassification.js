@@ -1,16 +1,15 @@
 const colorMap = {
-  0: "green",
-  1: "red",
-  2: "blue",
-  3: "yellow",
-  4: "purple",
-  5: "gray",
-  6: "orange",
-  7: "pink",
-  8: "brown",
-  9: "cyan",
-}
-
+  0: "#1f77b4", // Blue
+  1: "#ff7f0e", // Orange
+  2: "#2ca02c", // Green
+  3: "#d62728", // Red
+  4: "#9467bd", // Purple
+  5: "#8c564b", // Brown
+  6: "#e377c2", // Pink
+  7: "#7f7f7f", // Gray
+  8: "#bcbd22", // Yellow-Green
+  9: "#17becf", // Cyan
+};
 const nodeWidthConstantMap = {
   0: 10,
   1: 800,

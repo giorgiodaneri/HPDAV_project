@@ -33,6 +33,7 @@ class GraphD3 {
       node.y = y;
       if (node.value.type != 2 && node.value.type != 3) {
         node.r = Math.min(nodeWidthConstantMap[node.value.type] * (node.value.count / node.value.total_count), 20);
+        node.r = Math.max(node.r, 4);
         node.opacity = 0.8;
       }
       else{
@@ -43,26 +44,33 @@ class GraphD3 {
     });
 
     links.forEach(link => {
-      link.opacity =  1 * link.value / link.max_value;
+      link.opacity = this.getOpacity(link.value / link.max_value);
       link.color = d3.color('#100');
       link.strokeWidth = 2;
       link.borderColor = d3.color('#000');
     });
 
     
-      // Create the links
-    this.link = this.svg.append('g')
-      .selectAll('line')
-      .data(links)
-      .enter().append('line')
-      .attr('stroke-width', d => d.strokeWidth)
-      .attr('opacity', d => d.opacity)
-      .attr('border-color', d => d.borderColor)
-      .attr('stroke', d => d.color)
-      .attr('x1', d => nodes.find(n => n.id === d.source).x)
-      .attr('y1', d => nodes.find(n => n.id === d.source).y)
-      .attr('x2', d => this.getEdgePointX(d, nodes))
-      .attr('y2', d => this.getEdgePointY(d, nodes));
+  const lineGenerator = d3.line()
+    .curve(d3.curveBundle.beta(0.85)) // You can adjust the beta value for different curve tightness
+    .x(d => d.x)
+    .y(d => d.y);
+  
+  // Create the links with curves
+  this.link = this.svg.append('g')
+    .selectAll('path')
+    .data(links)
+    .enter().append('path')
+    .attr('d', d => {
+      const sourceNode = nodes.find(n => n.id === d.source);
+      const targetNode = nodes.find(n => n.id === d.target);
+      const midPoint = { x: (sourceNode.x + targetNode.x) / 2, y: (sourceNode.y + targetNode.y) / 2 };
+      return lineGenerator([sourceNode, midPoint, targetNode]);
+    })
+    .attr('stroke-width', d => d.strokeWidth)
+    .attr('opacity', d => d.opacity)
+    .attr('stroke', d => d.color)
+    .attr('fill', 'none');
 
     // Create the nodes
     this.node = this.svg.append('g')
@@ -77,37 +85,15 @@ class GraphD3 {
       .attr('cx', d => d.x)
       .attr('cy', d => d.y);
 
-    this.rect = this.svg.append('g')
-      .selectAll('rect')
-      .data(nodes.filter(d => d.value.type == 4)) // Seleziona i nodi di tipo 4
-      .enter().append('rect')
-      .attr('width', d => this.DSN_width)
-      .attr('height', d => this.DSN_height)
-      .attr('fill', d => d.color)
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 2)
-      .attr('x', d => (d.x - this.DSN_width/2)) // Centra il rettangolo rispetto alla posizione x
-      .attr('y', d => (d.y - this.DSN_height)); // Centra il rettangolo rispetto alla posizione y
-
-
-
     this.updateGraph(nodes, links);
 
   }
 
   
   updateGraph(nodes, links) {
-    // Update the fixed positions for each node based on its type
-    // nodes.forEach(node => {
-    //   const [centerX, centerY] = this.getClusterCenter(node.value.type);
-    //   const [x, y] = this.getRandomPositionInCircle(centerX, centerY);
-    //   node.x = x;
-    //   node.y = y;
-    //   node.r = 2 * (node.id[1].count / node.value.total_count);
-    // });
 
     links.forEach(link => {
-      link.opacity = 1 * (link.value / link.max_value);
+      link.opacity = this.getOpacity(link.value / link.max_value);
       link.color = d3.color('#999');
       link.strokeWidth = Math.sqrt(link.value);
     });
@@ -124,19 +110,6 @@ class GraphD3 {
       .on('mousemove', (event) => this.moveTooltip(event))
       .on('mouseout', () => this.hideTooltip());
 
-    this.rect = this.rect.data(nodes.filter((d) => d.value.type == 4));
-    this.rect.exit().remove();
-    this.rect = this.rect.enter().append('rect')
-        .attr('width', d => d.width)
-        .attr('height', d => d.height)
-        .attr('fill', d => d.color)
-        .merge(this.rect)
-        .attr('x', d => d.x - (this.DSN_width/2) )
-        .attr('y', d => d.y - (this.DSN_height/2))
-        .on('mouseover', (event, d) => this.showTooltip(event, d))
-        .on('mousemove', (event) => this.moveTooltip(event))
-        .on('mouseout', () => this.hideTooltip());
-
     this.link = this.link.data(links);
     this.link.exit().remove();
     this.link = this.link.enter().append('line')
@@ -149,45 +122,12 @@ class GraphD3 {
       .attr('x2', d => this.getEdgePointX(d, nodes))
       .attr('y2', d => this.getEdgePointY(d, nodes));
   }
-
-  // getClusterCenter(type, value) {
-  //   // Define the center position of the cluster based on the node type and value
-  //   let x_center, y_center;
-  //   let x, y;
-  //   const margin = 80; // Margin from the edge of the screen
-  //   let maxDistanceX;
-  //   let maxDistanceY;
-
-  //   if (type === 1) {
-  //     // Left side of the screen
-  //     x_center = this.width * 0.1;
-  //     y_center = this.height * 0.5;
-  //     maxDistanceX = this.width / 2 - margin;
-  //     maxDistanceY = this.height / 2 - margin;
-  //     x = margin + Math.random() * (this.width / 5);
-  //     y = margin + Math.random() * (this.height - margin);
-  //   } else if (type === 7 ) {
-  //     // Right side of the screen
-  //     x_center = this.width * 0.75;
-  //     y_center = this.height * 0.5;
-  //     maxDistanceX = this.width / 2 - margin;
-  //     maxDistanceY = this.height / 2 * margin;
-  //     x = this.width / 5 + margin + 100 + Math.random() * (this.width / 1.8 - margin);
-  //     y = margin + Math.random() * (this.height - margin - 60);
-  //   } else {
-  //     // Default to center
-  //     x = this.width  - margin;
-  //     y = this.height / 2;
-  //   }
-
-  //   return [x, y];
-  // }
-
+  
   getClusterCenter(type, value) {
     // Define the center position of the cluster based on the node type and value
     let x_center, y_center;
     let x, y;
-    const margin = 80; // Margin from the edge of the screen
+    const margin = 40; // Margin from the edge of the screen
     let maxDistanceX;
     let maxDistanceY;
 
@@ -201,9 +141,9 @@ class GraphD3 {
       x_center = this.width / 2;
       y_center = this.height / 2;
       do{
-        x = margin + Math.random() * (this.width - margin);
-        y = margin + Math.random() * (this.height - margin );
-      }while(Math.sqrt(Math.pow(x - x_center, 2) + Math.pow(y - y_center, 2)) <= Math.min(this.width, this.height) / 5);
+        x = margin + Math.random() * (this.width - margin - 50);
+        y = margin + Math.random() * (this.height - margin - 50);
+      }while(Math.sqrt(Math.pow(x - x_center, 2) + Math.pow(y - y_center, 2)) <= Math.min(this.width, this.height) / 3.5);
 
     } else {
       // Default to center
@@ -214,9 +154,36 @@ class GraphD3 {
     return [x, y];
   }
 
+  getOpacity(x){
+    switch(x){
+      case (x <= 0.1):
+        return 0.1;
+      case (x <= 0.2):
+        return 0.15;
+      case (x <= 0.3):
+        return 0.20;
+      case (x <= 0.4):
+        return 0.25;
+      case (x <= 0.5):
+        return 0.4;
+      case (x <= 0.6):
+        return 0.5;
+      case (x <= 0.7):
+        return 0.53;
+      case (x <= 0.8):
+        return 0.5;
+      case (x <= 0.9):
+        return 0.8;
+      case (x <= 1):
+        return 1.0;
+      default:
+        return 0.1;
+    }
+  };
+
   getRandomPositionInCircle(centerX, centerY) {
     // Define a random position within a circle around the center
-    const radius = Math.min(this.width, this.height) / 5;
+    const radius = Math.min(this.width, this.height) / 4;
     const angle = Math.random() * 2 * Math.PI;
     const distance = Math.random() * radius;
     const x = centerX + distance * Math.cos(angle);
@@ -251,10 +218,28 @@ class GraphD3 {
     return y;
   }
 
+  highlightNodesByIP(selectedCells) {
+    // Reset all nodes to their original stroke and stroke-width
+    this.node
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2);
+
+    // Highlight only the nodes present in selectedCells
+    selectedCells.forEach(cell => {
+      const sourceIP = cell.data.sourceIP;
+      const targetIP = cell.data.targetIP;
+      this.node
+        .filter(d => d.id === sourceIP || d.id === targetIP)
+        .attr('stroke', 'green')
+        .attr('stroke-width', 4);
+    });
+  }
+
   showTooltip(event, d) {
     this.tooltip.html(`
       <strong>IP:</strong> ${d.id}<br>
-      <strong>Connection made:</strong> ${d.value.count}<br>
+      <strong>Connections:</strong> ${d.value.count}<br>
+      <strong>DNS connections:</strong> ${d.value.dns_connection}<br>
       `)
       .style('visibility', 'visible')
       .style('top', (event.pageY - 10) + 'px')
