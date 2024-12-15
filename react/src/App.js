@@ -55,8 +55,8 @@ function App() {
       {/* Menu */}
       <div className="menu">
 
-      <button onClick={() => handleMenuClick('Page1')}>Page 1</button>
-        <button onClick={() => handleMenuClick('Page2')}>Page 2</button>
+      <button onClick={() => handleMenuClick('Page1')}>IDS logs analysis</button>
+        <button onClick={() => handleMenuClick('Page2')}>Firewall logs analysis</button>
        
       {/* {firewallStatus === 'loading' ? (
         <p>Loading firewall data...</p>
