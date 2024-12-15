@@ -17,7 +17,7 @@ function App() {
   const firewallStatus = useSelector((state) => state.firewallDataSet.status);
   const { data, total, hasMore, error } = useSelector((state) => state.firewallDataSet);
   const [page, setPage] = useState(1); // State for the current page
-  const pageSize = 1000000; // Number of records to fetch per page
+  const pageSize = 700000; // Number of records to fetch per page
 
   useEffect(() => {
     console.log("App useEffect");

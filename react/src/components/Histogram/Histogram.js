@@ -129,12 +129,12 @@ class Histogram {
             protocol: d.protocol,
             action: d.action
         })).filter(d => !isNaN(d.time));
-
+        console.log("Dest services: ", dest_services);
         
         filteredData = filteredData.filter(d => {
             const serviceFilter = dest_services.length === 0 || dest_services.includes(d.dest_service);
-            // const firewallFilter = !displayFirewall || d.destip === '172.23.0.1' || d.destip === '10.32.0.1';
-            return serviceFilter;
+            const excludeServices = !['telnet', 'https', 'domain', 'kpop'].includes(d.dest_service);
+            return serviceFilter && excludeServices;
         });
         const timeValues = filteredData.map(d => d.time);
         const timeInRange = timeValues.filter(time => time >= parsedStartTime && time <= parsedEndTime);
@@ -161,7 +161,7 @@ class Histogram {
         const customColors = [
             '#1f77b4', '#ff0000', '#2ca02c', '#d62728', '#9467bd',
             '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-            '#8a2be2', '#ff6347', '#32cd32', '#ffdd00', '#ff00d9' 
+            '#8a2be2', '#ff6347', '#32cd32'
         ];
         // Define color scale for dest_services
         const colorScale = d3.scaleOrdinal(customColors).domain(dest_services);
