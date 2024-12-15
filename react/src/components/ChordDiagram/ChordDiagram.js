@@ -42,8 +42,8 @@ class ChordDiagram {
         this.clear();
 
         // Ensure property names match the actual data keys
-        const sourceCount = d3.rollup(data, v => v.length, d => d.sourceIP);
-        const destCount = d3.rollup(data, v => v.length, d => d.destIP);
+        const sourceCount = d3.rollup(data, v => v.length, d => d.sourceip);
+        const destCount = d3.rollup(data, v => v.length, d => d.destip);
 
         const combinedCount = new Map();
         sourceCount.forEach((val, key) => {
@@ -74,8 +74,8 @@ class ChordDiagram {
 
         const matrix = Array.from({ length: topIPs.length }, () => new Array(topIPs.length).fill(0));
         for (const row of data) {
-            const src = row.sourceIP;
-            const dst = row.destIP;
+            const src = row.sourceip;
+            const dst = row.destip;
             if (ipIndex.has(src) && ipIndex.has(dst)) {
                 matrix[ipIndex.get(src)][ipIndex.get(dst)] += 1;
             }
@@ -90,11 +90,15 @@ class ChordDiagram {
         const chords = chord(matrix);
 
         const arc = d3.arc()
-            .innerRadius(this.radius - 20)
-            .outerRadius(this.radius);
+            .innerRadius(Math.max(0, this.radius - 20))
+            .outerRadius(Math.max(0, this.radius));
 
         const ribbon = d3.ribbon()
-            .radius(this.radius - 20);
+            .radius(Math.max(0, this.radius - 20));
+
+        console.log("Radius:", this.radius);
+        console.log("Inner Radius:", this.radius - 20);
+        console.log("Matrix:", matrix);
 
         const group = this.chordGroup
             .selectAll("g.group")
@@ -106,6 +110,7 @@ class ChordDiagram {
             .style("fill", d => color(d.index))
             .style("stroke", d => d3.rgb(color(d.index)).darker())
             .attr("d", arc);
+
 
         group.append("text")
             .each(d => { d.angle = (d.startAngle + d.endAngle) / 2; })

@@ -98,15 +98,13 @@ function App() {
               </div>
             </div>
           
-          {/* Chord Diagram and Histogram in the same row */}
-          <div id="visualization-row">
-            <div id="chord-container">
-              <ChordDiagramContainer />
-            </div>
-            <div id="histogram-container">
+          {/* Chord Diagram and Histogram*/}
+            <div id="histogram-container" style={{height: "600px"}}> 
               <HistogramContainer />
             </div>
-          </div>
+            <div id="chord-container" style={{height: "1000px"}}>
+              <ChordDiagramContainer />
+            </div>
         </>
       )}
 
