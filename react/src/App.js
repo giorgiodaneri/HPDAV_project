@@ -9,6 +9,7 @@ import ControlBar from './components/ControlBar/ControlBar';
 import GraphContainer from './components/Graph/GraphContainer';
 import ChordDiagramContainer from './components/ChordDiagram/ChordDiagramContainer'; // adjust path as needed
 import HistogramContainer from './components/Histogram/HistogramContainer';
+import HistoControlBar from './components/HistoControlBar/HistoControlBar';
 
 function App() {
   const dispatch = useDispatch();
@@ -53,15 +54,18 @@ function App() {
 
       {/* Menu */}
       <div className="menu">
+
+      <button onClick={() => handleMenuClick('Page1')}>Page 1</button>
+        <button onClick={() => handleMenuClick('Page2')}>Page 2</button>
        
-      {firewallStatus === 'loading' ? (
+      {/* {firewallStatus === 'loading' ? (
         <p>Loading firewall data...</p>
       ) : (
         <>
           <button onClick={() => handleMenuClick('Page1')}>Page 1</button>
           <button onClick={() => handleMenuClick('Page2')}>Page 2</button>
         </>
-      )}
+      )} */}
       </div>
 
       {/* Page Content */}
@@ -90,7 +94,7 @@ function App() {
           {/* Control Bar */}
           <div id="control-container" className="controlRow">
               <div id="control-bar-container" className="controlBar">
-                <ControlBar />
+                < HistoControlBar />
               </div>
             </div>
           

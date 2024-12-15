@@ -1,0 +1,105 @@
+.control-bar-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .input-group-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    width: 100%;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    font-size: 18px;
+  }
+  
+  .slider-group {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Make the slider grow to take available space */
+    align-items: flex-start;
+  }
+  
+  .time-slider {
+    width: 100%; /* Make the slider fill the width of its container */
+    height: 5px;
+    background: #ddd;
+    position: relative;
+    margin: 10px 0;
+  }
+  
+  .time-slider .thumb {
+    height: 15px;
+    width: 15px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: grab;
+    position: absolute;
+  }
+  
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 5px;  /* Add some space between the slider and labels */
+  }
+  
+  .slider-labels .left {
+    text-align: left;
+    flex: 1;
+  }
+  
+  .slider-labels .right {
+    text-align: right;
+    flex: 1;
+  }
+  
+  .generate-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+
+  .custom-multi-select {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    max-height: 150px;
+    overflow-y: auto; /* Allows scrolling for long lists */
+    background-color: #f9f9f9;
+  }
+  
+  .multi-select-option {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+  }
+  
+  .multi-select-option:hover {
+    background-color: #e6f7ff; /* Light blue hover effect */
+  }
+  
+  .multi-select-option input {
+    margin-right: 10px;
+  }
+  
+  .multi-select-option input:checked + label {
+    font-weight: bold;
+  }
+  

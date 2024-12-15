@@ -104,13 +104,13 @@ class Histogram {
         return `${day} ${time}:00`;
     }
 
-    renderHistogram(data, binWidth, startTime, endTime) {
+    renderHistogram(data, binWidth, startTime, endTime, displayFirewall, dest_services) {
         this.binWidth = binWidth;
 
         // Convert startTime and endTime to include seconds
         const formattedStartTime = this.convertToSecondsFormat(startTime);
         const formattedEndTime = this.convertToSecondsFormat(endTime);
-
+    
         if (!formattedStartTime || !formattedEndTime) {
             console.error("Failed to format start or end time");
             return;
@@ -118,77 +118,124 @@ class Histogram {
     
         const parsedStartTime = this.parseTime(formattedStartTime);
         const parsedEndTime = this.parseTime(formattedEndTime);
-
+    
         // Parse time values and filter data within the desired range
-        const parsedData = data.map(d => this.parseTime(d.time)).filter(d => !isNaN(d));
+        let filteredData = data.map(d => ({
+            time: this.parseTime(d.time),
+            sourceip: d.sourceip,
+            destip: d.destip,
+            dest_service: d.dest_service,
+            dest_port: d.dest_port,
+            protocol: d.protocol,
+            action: d.action
+        })).filter(d => !isNaN(d.time));
 
-        const filteredData = parsedData.filter(d => {
-            // const time = this.parseTime(d.time);
-            const time = d;
-            return time >= parsedStartTime && time <= parsedEndTime;
-        });
+        
+        filteredData = displayFirewall ? filteredData.filter(d => d.destip === '172.23.0.1' || d.destip === '10.32.0.1') : filteredData;
+        if (dest_services.length > 0) {
+            filteredData = filteredData.filter(d => dest_services.includes(d.dest_service));
+        }
 
+        const timeValues = filteredData.map(d => d.time);
+        const timeInRange = timeValues.filter(time => time >= parsedStartTime && time <= parsedEndTime);
+    
         const x = d3.scaleLinear()
-            .domain(d3.extent(filteredData)) // Set domain based on the data extent
+            .domain(d3.extent(timeInRange)) // Set domain based on the data extent
             .range([0, this.width]);
-
+    
         // Create bins using d3.bin
         const bin = d3.bin()
-            .thresholds(d3.range(d3.min(filteredData), d3.max(filteredData), this.binWidth));
-
+            .thresholds(d3.range(d3.min(timeInRange), d3.max(timeInRange), this.binWidth));
+    
         // Calculate bins based on the time data
-        const bins = bin(filteredData);
-
-        // Calculate the number of items within each bin
-        bins.forEach(d => {
-            d.count = d.length;  // Store the count of data points in each bin
+        const bins = bin(timeInRange);
+    
+        // Group data in each bin by dest_service
+        bins.forEach(bin => {
+            bin.groups = d3.group(
+                filteredData.filter(d => d.time >= bin.x0 && d.time < bin.x1),
+                d => d.dest_service
+            );
         });
 
-        // Calculate the maximum count to scale the y-axis properly
-        const maxCount = d3.max(bins, d => d.count);
+        // Define color scale for dest_services
+        const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(dest_services);
 
-        // Create the y scale based on the max count
+        // Calculate the max stacked height for y-axis scaling
+        const maxStackHeight = d3.max(bins, bin =>
+            d3.sum([...bin.groups.values()].map(group => group.length))
+        );
+
         const y = d3.scaleLinear()
-            .domain([0, maxCount])  // Set y-domain to be from 0 to the max count in the bins
+            .domain([0, maxStackHeight])
             .range([this.height, 0]);
 
-        // Update the axes
         const xAxis = d3.axisBottom(x)
             .ticks(15)
-            .tickFormat(d => this.formatTime(d)); // Format x-axis labels as D HH:MM
+            .tickFormat(d => this.formatTime(d));
 
         const yAxis = d3.axisLeft(y).ticks(5);
 
+        // clear old axis
+        this.chart.selectAll('.x-axis').selectAll('*').remove();
+        this.chart.selectAll('.y-axis').selectAll('*').remove();
 
         this.chart.select('.x-axis').call(xAxis).selectAll('text').attr('transform', 'rotate(-45)').style('text-anchor', 'end');
         this.chart.select('.y-axis').call(yAxis).selectAll('text').attr('transform', 'translate(-10,0)');
+        this.chart.select('.x-label').attr('x', this.width / 2).attr('y', this.height + this.margin.bottom - 2);
 
-        // move x axis label down
-        this.chart.select('.x-label').attr('x', this.width / 2).attr('y', this.height + this.margin.bottom -2);
+        // remove any previous element
+        this.chart.selectAll('.bar-group').remove();
+        
+        // Bind bins to bar groups
+        const barGroups = this.chart.selectAll('.bar-group')
+        .data(bins, d => d.x0); // Use `x0` as key for binding
 
-        // Bind data to bars (bins)
-        const bars = this.chart.selectAll('.bar')
-            .data(bins);
+        // Handle exit: Remove old elements and their children
+        barGroups.exit().selectAll('rect').remove(); // Clear child elements
+        barGroups.exit().remove(); // Remove the group itself
 
-        // Enter new bars
-        bars.enter().append('rect')
-            .attr('class', 'bar')
-            .attr('x', d => x(d.x0)) // Position the bar at the start of the bin
-            .attr('y', d => y(d.count)) // Set the y position based on the count
-            .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1)) // Width of the bin
-            .attr('height', d => this.height - y(d.count)) // Bar height based on the count of items
-            .style('fill', 'steelblue');
+        // Handle enter: Append new bar groups
+        const newBarGroups = barGroups.enter()
+            .append('g')
+            .attr('class', 'bar-group')
+            .attr('transform', d => `translate(${x(d.x0)}, 0)`);
 
-        // Update existing bars
-        bars.attr('x', d => x(d.x0))
-            .attr('y', d => y(d.count))
-            .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1))
-            .attr('height', d => this.height - y(d.count));
-
-        // Remove old bars
-        bars.exit().remove();
+        // Handle enter + update: Add or update stacked rectangles within each bar group
+        newBarGroups.merge(barGroups)
+        .selectAll('rect')
+        .data(d => {
+            let cumulativeHeight = 0;
+            return [...d.groups.entries()].map(([service, group]) => {
+                const count = group.length;
+                const yStart = cumulativeHeight;
+                cumulativeHeight += count;
+                return { service, count, yStart, x0: d.x0, x1: d.x1 };
+            });
+        })
+        .join(
+            enter => enter.append('rect')
+                .attr('x', 0)
+                .attr('y', d => y(d.yStart + d.count))
+                .attr('width', d => {
+                    const x0 = x(d.x0) || 0;
+                    const x1 = x(d.x1) || 0;
+                    return Math.max(0, x1 - x0 - 1);
+                })
+                .attr('height', d => y(d.yStart) - y(d.yStart + d.count))
+                .style('fill', d => colorScale(d.service)),
+            update => update // Update existing bars
+                .attr('y', d => y(d.yStart + d.count))
+                .attr('width', d => {
+                    const x0 = x(d.x0) || 0;
+                    const x1 = x(d.x1) || 0;
+                    return Math.max(0, x1 - x0 - 1);
+                })
+                .attr('height', d => y(d.yStart) - y(d.yStart + d.count))
+                .style('fill', d => colorScale(d.service)),
+            exit => exit.remove() // Ensure old rects are removed
+        );
     }
-    
 }
 
 export default Histogram;

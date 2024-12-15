@@ -3,7 +3,7 @@ import dataSetReducer from './redux/DataSetSlice';
 import streamGraphReducer from './redux/StreamGraphSlice';
 import heatmapConfigReducer from './redux/HeatmapConfigSlice';
 import firewallReducer  from './redux/FirewallSlice';
-// import histogramReducer from './redux/HistogramSlice';
+import histoConfigReducer from './redux/HistoConfigSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,7 +11,7 @@ const store = configureStore({
     streamGraph: streamGraphReducer, // stream graph reducer
     heatmapConfig: heatmapConfigReducer, 
     firewallDataSet: firewallReducer, // Register the `firewallDataSet` slice
-    // histogramData: histogramReducer, // Register the `histogramDataSet` slice
+    histoConfig: histoConfigReducer, // Register the `histo
   },
 });
 

@@ -1,7 +1,6 @@
-// Firewall slice is mostly fine. Below is the same, no changes are required.
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// Thunk for fetching a page of the firewall dataset
+// thunk for fetching a page of the firewall dataset
 export const getFirewallData = createAsyncThunk(
   'firewallData/fetchData',
   async ({ page = 1, pageSize = 10000 } = {}, { getState }) => {
@@ -23,25 +22,25 @@ export const getFirewallData = createAsyncThunk(
 export const firewallSlice = createSlice({
   name: 'firewallDataSet',
   initialState: {
-    data: [], // Store accumulated data here
-    selectedTimeRange: null, // Selected time range from the brush
-    selectedClassifications: [], // Selected classifications within the range
+    data: [], 
+    selectedTimeRange: null, 
+    selectedClassifications: [], 
     status: 'idle',
     error: null,
-    total: 0, // Total number of records available on the server
-    page: 0, // Current page
-    pageSize: 100, // Default page size
-    hasMore: true, // Whether more data is available
+    total: 0, 
+    page: 0, 
+    pageSize: 100, 
+    hasMore: true, 
   },
   reducers: {
     updateSelectedTimeRange: (state, action) => {
-      state.selectedTimeRange = action.payload; // Store selected time range in the streamgraph
+      state.selectedTimeRange = action.payload; 
     },
     updateSelectedClassifications: (state, action) => {
-      state.selectedClassifications = action.payload; // Store classifications within the range of streamgraph
+      state.selectedClassifications = action.payload; 
     },
     resetFirewallData: (state) => {
-      state.data = []; // Clear data when resetting
+      state.data = []; 
       state.page = 0;
       state.hasMore = true;
     },
@@ -54,16 +53,14 @@ export const firewallSlice = createSlice({
       })
       .addCase(getFirewallData.fulfilled, (state, action) => {
         const { data, page, total } = action.payload;
-
-        state.data = [...state.data, ...data]; // Append the new data to the existing dataset
-        state.page = page; // Update the current page
-        state.total = total; // Update the total count of records
-        state.hasMore = state.data.length < total; // Determine if there's more data to fetch
+        state.data = [...state.data, ...data]; 
+        state.page = page; 
+        state.total = total;
+        state.hasMore = state.data.length < total; 
         state.status = 'succeeded';
-
-        if(state.data.length > 0) {
-          console.log(JSON.parse(JSON.stringify(state.data[0])));
-        }
+        // if(state.data.length > 0) {
+        //   console.log(JSON.parse(JSON.stringify(state.data[0])));
+        // }
       })
       .addCase(getFirewallData.rejected, (state, action) => {
         state.status = 'failed';
