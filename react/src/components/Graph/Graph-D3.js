@@ -26,21 +26,48 @@ class GraphD3 {
   initializeGraph(nodes, links) {
     this.svg.selectAll('*').remove(); // Clear previous graph
 
+    // const simulation = d3.forceSimulation(nodes)
+    //   .force("link", d3.forceLink(links).id(d => d.id).distance(50))
+    //   .force("charge", d3.forceManyBody().strength(d => {
+    //     // Forza repulsiva maggiore per i nodi senza connessioni (tipo 7)
+    //     if (d.value.type === 7 && links.filter(link => link.source === d.id || link.target === d.id).length === 0) {
+    //       return -200;
+    //     }
+    //     return -50; // Repulsione normale
+    //   }))
+    //   .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+    //   .force("cluster", d3.forceRadial(d => {
+    //     // Forza radiale più forte per i nodi di tipo 1 (cluster centrale)
+    //     if (d.value.type === 1) return 0;
+    //     return this.height / 4; // Mantieni i nodi lontani dal centro
+    //   }).strength(d => (d.value.type === 1 ? 0.5 : 0.1)))
+    //   .on("tick", () => this.ticked()); // Aggiorna la posizione dei nodi e dei link
+
     // Define the fixed positions for each node based on its type
     nodes.forEach(node => {
       const [x, y] = this.getClusterCenter(node.value.type);
       node.x = x;
       node.y = y;
       if (node.value.type != 2 && node.value.type != 3) {
-        node.r = Math.min(nodeWidthConstantMap[node.value.type] * (node.value.count / node.value.total_count), 20);
-        node.r = Math.max(node.r, 4);
-        node.opacity = 0.8;
+        if(node.value.count !== 0){
+          node.r = Math.min(nodeWidthConstantMap[node.value.type] * (node.value.count / node.value.total_count), 20);
+          node.r = Math.max(node.r, 4);
+          node.opacity = 0.8;
+          node.color = d3.color(colorMap[node.value.type]);
+        }
+        else{
+          node.r = Math.min(500 * (node.value.dns_connection / node.value.total_dns_connection), 20);
+          node.r = Math.max(node.r, 4);
+          node.opacity = 0.6;
+          node.color = d3.color(colorMap[8]);
+        }
+
       }
       else{
         node.r = 20;
         node.opacity = 0.7;
+        node.color = d3.color(colorMap[node.value.type]);
       }
-      node.color = d3.color(colorMap[node.value.type]);
     });
 
     links.forEach(link => {
@@ -60,13 +87,7 @@ class GraphD3 {
   this.link = this.svg.append('g')
     .selectAll('path')
     .data(links)
-    .enter().append('path')
-    .attr('d', d => {
-      const sourceNode = nodes.find(n => n.id === d.source);
-      const targetNode = nodes.find(n => n.id === d.target);
-      const midPoint = { x: (sourceNode.x + targetNode.x) / 2, y: (sourceNode.y + targetNode.y) / 2 };
-      return lineGenerator([sourceNode, midPoint, targetNode]);
-    })
+    .enter().append('line')
     .attr('stroke-width', d => d.strokeWidth)
     .attr('opacity', d => d.opacity)
     .attr('stroke', d => d.color)
@@ -119,8 +140,8 @@ class GraphD3 {
       .merge(this.link)
       .attr('x1', d => nodes.find(n => n.id === d.source).x)
       .attr('y1', d => nodes.find(n => n.id === d.source).y)
-      .attr('x2', d => this.getEdgePointX(d, nodes))
-      .attr('y2', d => this.getEdgePointY(d, nodes));
+      .attr('x2', d => nodes.find(n => n.id === d.target).x)
+      .attr('y2', d => nodes.find(n => n.id === d.target).y);
   }
   
   getClusterCenter(type, value) {
@@ -155,29 +176,28 @@ class GraphD3 {
   }
 
   getOpacity(x){
-    switch(x){
-      case (x <= 0.1):
-        return 0.1;
-      case (x <= 0.2):
-        return 0.15;
-      case (x <= 0.3):
-        return 0.20;
-      case (x <= 0.4):
-        return 0.25;
-      case (x <= 0.5):
-        return 0.4;
-      case (x <= 0.6):
-        return 0.5;
-      case (x <= 0.7):
-        return 0.53;
-      case (x <= 0.8):
-        return 0.5;
-      case (x <= 0.9):
-        return 0.8;
-      case (x <= 1):
-        return 1.0;
-      default:
-        return 0.1;
+    if (x <= 0.1) {
+      return 0.1;
+    } else if (x <= 0.2) {
+      return 0.15;
+    } else if (x <= 0.3) {
+      return 0.20;
+    } else if (x <= 0.4) {
+      return 0.25;
+    } else if (x <= 0.5) {
+      return 0.25;
+    } else if (x <= 0.6) {
+      return 0.30;
+    } else if (x <= 0.7) {
+      return 0.35;
+    } else if (x <= 0.8) {
+      return 0.5;
+    } else if (x <= 0.9) {
+      return 0.8;
+    } else if (x <= 1) {
+      return 1.0;
+    } else {
+      return 0.1;
     }
   };
 
@@ -191,32 +211,6 @@ class GraphD3 {
     return [x, y];
   }
 
-  getEdgePointX(d, nodes){
-    let node = nodes.find(n => n.id === d.target);
-    let x = node.x;
-    let type = node.value.type;
-
-    if(type != 4)
-      return x;
-    return this.width - 60 - this.DSN_width/2;
-  }
-
-  getEdgePointY(d, nodes){
-    let node = nodes.find(n => n.id === d.target);
-    let y = node.y;
-    let type = node.value.type;
-
-    let top = this.height/2 - this.DSN_height / 2;
-    let bottom = this.height/2 + this.DSN_height / 2;
-
-    if(type != 4)
-      return y;
-    if (y < top)
-      return top;
-    if (y > bottom)
-      return bottom;
-    return y;
-  }
 
   highlightNodesByIP(selectedCells) {
     // Reset all nodes to their original stroke and stroke-width
@@ -227,7 +221,7 @@ class GraphD3 {
     // Highlight only the nodes present in selectedCells
     selectedCells.forEach(cell => {
       const sourceIP = cell.data.sourceIP;
-      const targetIP = cell.data.targetIP;
+      const targetIP = cell.data.destIP;
       this.node
         .filter(d => d.id === sourceIP || d.id === targetIP)
         .attr('stroke', 'green')

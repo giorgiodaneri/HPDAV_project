@@ -36,6 +36,7 @@ const GraphContainer = () => {
       const nodes = new Map();
       const linksMap = {};
       let total_connection = 0;
+      let total_dns_connection = 0;
       
       filteredData.forEach(row => {
         const sourceIP = row.sourceIP;
@@ -46,15 +47,18 @@ const GraphContainer = () => {
         const addUniqueNode = (ip, type) => {
           if (!nodes.has(ip)) {
             if (destination === 4) {
-              nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0, dns_connection: 1});
+              nodes.set(ip, { IP: ip, type: type, count: 0 , total_count: 0, dns_connection: 1, total_dns_connection: 0});
+              total_dns_connection += 1;
             }
             else {
-              nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0, dns_connection: 0});
+              nodes.set(ip, { IP: ip, type: type, count: 1 , total_count: 0, dns_connection: 0, total_dns_connection: 0});
               total_connection += 1;
             }
           } else {
             if (destination === 4) {
               nodes.get(ip).dns_connection += 1;
+              total_dns_connection += 1;
+              // nodes.get(ip).count += 1;
             }
             else{
               total_connection += 1;
@@ -71,6 +75,7 @@ const GraphContainer = () => {
         
         nodes.forEach((node) => {
           node.total_count = total_connection;
+          node.total_dns_connection = total_dns_connection;
         });
 
         const addOrUpdateLink = (source, target) => {
@@ -113,9 +118,15 @@ const GraphContainer = () => {
     }
   }, [selectedCells, graph]);
 
+
   return (
     <div>
-      <h2>Graph Container</h2>
+      <h2>Network Visualization</h2>
+      <div style={{ marginTop: '10px', fontSize: '16px', display: 'flex', justifyContent: 'center' }}>
+        <p style={{ marginRight: '20px' }}><span style={{ color: '#7f7f7f', fontSize: '24px' }}>●</span> Workstations</p>
+        <p style={{ marginRight: '20px' }}><span style={{ color: '#ff7f0e', fontSize: '24px'}}>●</span> Websites</p>
+        <p><span style={{ color: '#bcbd22', fontSize: '24px' }}>●</span> Nodes connected with DNS</p>
+      </div>
       <svg ref={svgRef} style={{ width: '100%', height: '700px' }}></svg>
     </div>
   );
