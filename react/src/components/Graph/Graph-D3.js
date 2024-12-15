@@ -26,47 +26,36 @@ class GraphD3 {
   initializeGraph(nodes, links) {
     this.svg.selectAll('*').remove(); // Clear previous graph
 
-    // const simulation = d3.forceSimulation(nodes)
-    //   .force("link", d3.forceLink(links).id(d => d.id).distance(50))
-    //   .force("charge", d3.forceManyBody().strength(d => {
-    //     // Forza repulsiva maggiore per i nodi senza connessioni (tipo 7)
-    //     if (d.value.type === 7 && links.filter(link => link.source === d.id || link.target === d.id).length === 0) {
-    //       return -200;
-    //     }
-    //     return -50; // Repulsione normale
-    //   }))
-    //   .force("center", d3.forceCenter(this.width / 2, this.height / 2))
-    //   .force("cluster", d3.forceRadial(d => {
-    //     // Forza radiale più forte per i nodi di tipo 1 (cluster centrale)
-    //     if (d.value.type === 1) return 0;
-    //     return this.height / 4; // Mantieni i nodi lontani dal centro
-    //   }).strength(d => (d.value.type === 1 ? 0.5 : 0.1)))
-    //   .on("tick", () => this.ticked()); // Aggiorna la posizione dei nodi e dei link
-
     // Define the fixed positions for each node based on its type
     nodes.forEach(node => {
-      const [x, y] = this.getClusterCenter(node.value.type);
-      node.x = x;
-      node.y = y;
-      if (node.value.type != 2 && node.value.type != 3) {
-        if(node.value.count !== 0){
-          node.r = Math.min(nodeWidthConstantMap[node.value.type] * (node.value.count / node.value.total_count), 20);
-          node.r = Math.max(node.r, 4);
-          node.opacity = 0.8;
+      if (node.id === "172.23.0.10") {
+        // Place node randomly within the container
+        node.x = Math.random() * this.width;
+        node.y = Math.random() * this.height;
+        node.fx = node.x; // Fix the position
+        node.fy = node.y;
+      } else {
+        const [x, y] = this.getClusterCenter(node.value.type);
+        node.x = x;
+        node.y = y;
+        if (node.value.type != 2 && node.value.type != 3) {
+          if(node.value.count !== 0){
+            node.r = Math.min(nodeWidthConstantMap[node.value.type] * (node.value.count / node.value.total_count), 20);
+            node.r = Math.max(node.r, 4);
+            node.opacity = 0.8;
+            node.color = d3.color(colorMap[node.value.type]);
+          }
+          else{
+            node.r = Math.min(500 * (node.value.dns_connection / node.value.total_dns_connection), 20);
+            node.r = Math.max(node.r, 4);
+            node.opacity = 0.6;
+            node.color = d3.color(colorMap[8]);
+          }
+        } else {
+          node.r = 20;
+          node.opacity = 0.7;
           node.color = d3.color(colorMap[node.value.type]);
         }
-        else{
-          node.r = Math.min(500 * (node.value.dns_connection / node.value.total_dns_connection), 20);
-          node.r = Math.max(node.r, 4);
-          node.opacity = 0.6;
-          node.color = d3.color(colorMap[8]);
-        }
-
-      }
-      else{
-        node.r = 20;
-        node.opacity = 0.7;
-        node.color = d3.color(colorMap[node.value.type]);
       }
     });
 
@@ -77,40 +66,74 @@ class GraphD3 {
       link.borderColor = d3.color('#000');
     });
 
-    
-  const lineGenerator = d3.line()
-    .curve(d3.curveBundle.beta(0.85)) // You can adjust the beta value for different curve tightness
-    .x(d => d.x)
-    .y(d => d.y);
+    const simulation = d3.forceSimulation(nodes.filter(node => node.value.count !== 0)) // Exclude fixed nodes and count=0
+      .force("link", d3.forceLink(links).id(d => d.id).distance(10)) // Increase link distance
+      .force("charge", d3.forceManyBody().strength(d => {
+        let repulsion_force = -400 * (300 * d.value.count / d.value.total_count);
+        return nodes.filter(n => (n.value.type === d.value.type)).length > 1 ? repulsion_force : -100; // Higher repulsion for same type
+      }))
+      .force("center", d3.forceCenter(this.width / 2, this.height / 2)) // Center the nodes
+      .force("x", d3.forceX(this.width / 2).strength(0.2)) // Horizontal force towards the center
+      .force("y", d3.forceY(this.height / 2).strength(0.4)) // Vertical force towards the center
+      .on("tick", () => this.ticked()); // Update node and link positions
   
-  // Create the links with curves
-  this.link = this.svg.append('g')
-    .selectAll('path')
-    .data(links)
-    .enter().append('line')
-    .attr('stroke-width', d => d.strokeWidth)
-    .attr('opacity', d => d.opacity)
-    .attr('stroke', d => d.color)
-    .attr('fill', 'none');
+    // Create the links
+    this.link = this.svg.append('g')
+      .selectAll('line')
+      .data(links)
+      .enter().append('line')
+      .attr('stroke-width', d => d.strokeWidth)
+      .attr('opacity', d => d.opacity)
+      .attr('stroke', d => d.color)
+      .attr('fill', 'none');
 
     // Create the nodes
     this.node = this.svg.append('g')
       .selectAll('circle')
-      .data(nodes.filter(d => d.value.type != 4)) // Seleziona i nodi di tipo diverso da 4
+      .data(nodes)
       .enter().append('circle')
       .attr('r', d => d.r)
       .attr('fill', d => d.color)
       .attr('opacity', d => d.opacity)
       .attr('stroke', '#fff')
       .attr('stroke-width', 2)
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y);
+      .call(d3.drag()
+        .on("start", (event, d) => this.dragstarted(event, d, simulation))
+        .on("drag", (event, d) => this.dragged(event, d))
+        .on("end", (event, d) => this.dragended(event, d, simulation)));
 
     this.updateGraph(nodes, links);
-
   }
 
-  
+  ticked() {
+    this.node
+      .attr('cx', d => d.x = Math.max(d.r, Math.min(this.width - d.r, d.x)))
+      .attr('cy', d => d.y = Math.max(d.r, Math.min(this.height - d.r, d.y)));
+
+    this.link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+  }
+
+  dragstarted(event, d, simulation) {
+    if (!event.active) simulation.alphaTarget(0.5).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+
+  dragended(event, d, simulation) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+
   updateGraph(nodes, links) {
 
     links.forEach(link => {
@@ -138,10 +161,10 @@ class GraphD3 {
       .attr('stroke', d => d.color)
       .attr('opacity', d => d.opacity)
       .merge(this.link)
-      .attr('x1', d => nodes.find(n => n.id === d.source).x)
-      .attr('y1', d => nodes.find(n => n.id === d.source).y)
-      .attr('x2', d => nodes.find(n => n.id === d.target).x)
-      .attr('y2', d => nodes.find(n => n.id === d.target).y);
+      .attr('x1', d => nodes.find(n => n.id === d.source.id).x)
+      .attr('y1', d => nodes.find(n => n.id === d.source.id).y)
+      .attr('x2', d => nodes.find(n => n.id === d.target.id).x)
+      .attr('y2', d => nodes.find(n => n.id === d.target.id).y);
   }
   
   getClusterCenter(type, value) {
