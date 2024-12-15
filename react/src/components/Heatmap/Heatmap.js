@@ -3,7 +3,7 @@ import store from '../../store';
 import { addSelectedCell } from '../../redux/HeatmapConfigSlice';
 
 class Heatmap {
-    margin = { top: 40, right: 50, bottom: 50, left: 85 };
+    margin = { top: 40, right: 50, bottom: 60, left: 85 };
     size;
     width;
     height;

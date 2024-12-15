@@ -257,7 +257,6 @@ class GraphD3 {
       <strong>IP:</strong> ${d.id}<br>
       <strong>External connections:</strong> ${d.value.count}<br>
       <strong>DNS connections:</strong> ${d.value.dns_connection}<br>
-      
       `)
       .style('visibility', 'visible')
       .style('top', (event.pageY - 10) + 'px')
