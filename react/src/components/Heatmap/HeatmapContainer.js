@@ -69,6 +69,7 @@ function HeatmapContainer() {
             <h2>HeatMap</h2>
             <button
                 onClick={handleClearSelection}
+                className="clear-selection-button"
                 style={{
                     marginTop: '10px',
                     padding: '10px 20px',

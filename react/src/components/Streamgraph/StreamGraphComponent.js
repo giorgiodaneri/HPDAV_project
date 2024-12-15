@@ -8,6 +8,7 @@ import {
   getProjectionData,
   updateSelectedTimeRange,
 } from '../../redux/DataSetSlice';
+import './StreamGraph.css';
 
 const StreamGraphComponent = ({ onBrush }) => {
   const data = useSelector((state) => state.dataSet.data || []);
@@ -90,6 +91,7 @@ const StreamGraphComponent = ({ onBrush }) => {
         <label htmlFor="aggregation-interval">Aggregation Interval: </label>
         <select
           id="aggregation-interval"
+          className="agg-select"
           value={aggregationInterval}
           onChange={handleAggregationChange}
         >

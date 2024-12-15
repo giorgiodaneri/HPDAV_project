@@ -50,13 +50,13 @@ function App() {
   return (
     <div className="App">
       {console.log("App rendering")}
-      <h2>HPDAV Project</h2>
+      <h2>Analysis of Bank of Money's Regional Office Operations</h2>
 
       {/* Menu */}
       <div className="menu">
 
-      <button onClick={() => handleMenuClick('Page1')}>IDS logs analysis</button>
-        <button onClick={() => handleMenuClick('Page2')}>Firewall logs analysis</button>
+      <button className="page-button" onClick={() => handleMenuClick('Page1')}>IDS logs analysis</button>
+        <button className="page-button" onClick={() => handleMenuClick('Page2')}>Firewall logs analysis</button>
        
       {/* {firewallStatus === 'loading' ? (
         <p>Loading firewall data...</p>
