@@ -31,13 +31,9 @@ class ChordDiagram {
         "172.23.0.2": "Log Server",
     };
 
-    allowedServices = [
-        'https', 'ftp', 'pptp', 'ms-sql-s', 'ms-sql-m', 'ingreslock',
-        'netbios-ns', 'netbios-dgm', 'syslog', 'knetd', 'auth', 'wins'
-    ];
-
     serviceColors = {
-        'https': '#a6cee3',
+        'ttp': '#6a3d99',
+        'http': '#a6cee3',
         'ftp': '#1f78b4',
         'pptp': '#b2df8a',
         'ms-sql-s': '#33a02c',
@@ -169,7 +165,21 @@ class ChordDiagram {
         this.clear();
 
         //log dest_service
-        console.log(`dest_services: ${dest_services}`);
+        console.log(`FILTEO : dest_services: ${dest_services}`);
+        //const filteredData = data.map(d => ({
+        //    time: this.parseTime(d.time),
+        //    sourceip: d.sourceip,
+        //    destip: d.destip,
+        //    dest_service: d.dest_service,
+        //}))
+        //.filter(d => d.time >= this.parseTime(startTime) && d.time <= this.parseTime(endTime))
+        //.filter(d => {
+        //    const isAllowed = this.allowedServices.includes(d.dest_service);
+        //    
+        //    //log comparison
+        //    console.log(`d.dest_service: ${d.dest_service}, allowedServices: ${this.allowedServices}`);
+        //    return isAllowed;
+        //});
 
         const filteredData = data.map(d => ({
             time: this.parseTime(d.time),
@@ -178,8 +188,17 @@ class ChordDiagram {
             dest_service: d.dest_service,
         }))
         .filter(d => d.time >= this.parseTime(startTime) && d.time <= this.parseTime(endTime))
-        .filter(d => this.allowedServices.includes(d.dest_service)); // Only include allowed services
-
+        .filter(d => {
+            
+            const isAllowed = dest_services.includes(d.dest_service);
+            if( isAllowed ){
+               // console.log(`ddddddddddddddd d.dest_service: ${d.dest_service}, dest_services: ${dest_services}`);
+            }
+            // Debug log to verify filtering
+            return isAllowed;
+        });
+        
+        
         const sourceCount = d3.rollup(filteredData, v => v.length, d => d.sourceip);
         const destCount = d3.rollup(filteredData, v => v.length, d => d.destip);
 
@@ -204,15 +223,22 @@ class ChordDiagram {
 
         const chords = d3.chord().padAngle(0.05)(matrix);
 
-        // Aggregate most used dest_service for each connection
         const mostUsedServiceByConnection = d3.rollup(
             filteredData,
-            v => {
-                const serviceCounts = d3.rollup(v, d => d.length, d => d.dest_service);
-                return Array.from(serviceCounts).sort((a, b) => b[1] - a[1])[0][0]; // Most frequent service
+            (entries) => {
+                // Count the occurrences of each service for this connection
+                const serviceCounts = d3.rollup(entries, v => v.length, d => d.dest_service);
+                
+                // Find the service with the highest count
+                const mostFrequentService = Array.from(serviceCounts)
+                    .sort((a, b) => b[1] - a[1])[0][0]; // [0] is the service, [1] is the count
+                //console.log(`mostFrequentService: ${mostFrequentService}`);
+                return mostFrequentService;
             },
-            d => `${d.sourceip}-${d.destip}`
+            d => `${d.sourceip}-${d.destip}` // Group by connection (source IP -> dest IP)
         );
+        
+        
 
         const arc = d3.arc()
             .innerRadius(this.radius - 20)
@@ -253,13 +279,19 @@ class ChordDiagram {
             .style("fill", d => {
                 const connectionKey = `${topIPs[d.source.index]}-${topIPs[d.target.index]}`;
                 const mostUsedService = mostUsedServiceByConnection.get(connectionKey);
+
+                //log info
+                console.log(`Connection: ${topIPs[d.source.index]} → ${topIPs[d.target.index]}: Most Used Service: ${mostUsedService}`);
+
                 return this.getServiceColor(mostUsedService);
             })
             .style("stroke", d => {
                 const connectionKey = `${topIPs[d.source.index]}-${topIPs[d.target.index]}`;
                 const mostUsedService = mostUsedServiceByConnection.get(connectionKey);
                 //log info
-                console.log(`Connection: ${topIPs[d.source.index]} → ${topIPs[d.target.index]}: Most Used Service: ${mostUsedService}`);
+                if( mostUsedService === 'knetd'){
+                }
+                //console.log(`Connection: ${topIPs[d.source.index]} → ${topIPs[d.target.index]}: Most Used Service: ${mostUsedService}`);
                 return d3.rgb(this.getServiceColor(mostUsedService)).darker();
             })
             .append("title")
