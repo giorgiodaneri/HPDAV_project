@@ -256,19 +256,13 @@ class ChordDiagram {
             .style("fill", d => {
                 const connectionKey = `${topIPs[d.source.index]}-${topIPs[d.target.index]}`;
                 const mostUsedService = mostUsedServiceByConnection.get(connectionKey);
-
-                //log info
-                console.log(`Connection: ${topIPs[d.source.index]} → ${topIPs[d.target.index]}: Most Used Service: ${mostUsedService}`);
-
                 return this.getServiceColor(mostUsedService);
             })
             .style("stroke", d => {
                 const connectionKey = `${topIPs[d.source.index]}-${topIPs[d.target.index]}`;
                 const mostUsedService = mostUsedServiceByConnection.get(connectionKey);
-                //log info
                 if( mostUsedService === 'knetd'){
                 }
-                //console.log(`Connection: ${topIPs[d.source.index]} → ${topIPs[d.target.index]}: Most Used Service: ${mostUsedService}`);
                 return d3.rgb(this.getServiceColor(mostUsedService)).darker();
             })
             .append("title")

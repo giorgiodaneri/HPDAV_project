@@ -59,7 +59,7 @@ function ControlBar() {
     <form className="control-bar-form" onSubmit={handleOnSubmit}>
       <div className="input-group-row">
         <div className="input-group" style={{ width: "30%", textAlign: "left" }}>
-          <label>Filter Categories</label>
+          <label> Filter Categories</label>
           {[
             "Generic Protocol Command Decode",
             "Potential Corporate Privacy Violation",
@@ -96,7 +96,10 @@ function ControlBar() {
             onChange={setSliderValues}
             step={1}
             pearling
-            renderThumb={(props, state) => <div {...props} />}
+            renderThumb={(props, state) => {
+              const { key, ...restProps } = props;
+              return <div {...restProps} />;
+            }}
           />
           <div className="slider-labels">
             <span className="left">{formatTime(sliderValues[0])}</span>

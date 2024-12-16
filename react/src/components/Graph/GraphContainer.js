@@ -124,6 +124,7 @@ const GraphContainer = () => {
       
       </div>
       <svg ref={svgRef} style={{ width: '100%', height: '700px' }}></svg>
+      <div id="tooltip-container"></div>
     </div>
   );
 };

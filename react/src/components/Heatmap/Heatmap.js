@@ -63,6 +63,8 @@ class Heatmap {
         const parsedStartTime = this.parseTime(startTime);
         const parsedEndTime = this.parseTime(endTime);
 
+        // remove all
+
         const filteredData = data.filter(d => {
             const time = this.parseTime(d.time);
             return time >= parsedStartTime && time <= parsedEndTime && filters.includes(d.classification);
@@ -143,16 +145,9 @@ class Heatmap {
             .domain(topDestIPs)
             .range([0, this.height])
             .padding(0.05);
-        // tooltip for each cell
-        const tooltip = d3.select("body").append("div")
-            .attr("class", "tooltip")
-            .style("position", "absolute")
-            .style("visibility", "hidden")
-            .style("background-color", "rgba(0,0,0,0.7)")
-            .style("color", "white")
-            .style("border-radius", "5px")
-            .style("padding", "5px")
-            .style("pointer-events", "none");
+
+        // Set up tooltip element
+        const tooltip = d3.select("#tooltip-container");
 
         const classificationMap = {
             0: "Generic Protocol Command Decode",
@@ -165,15 +160,6 @@ class Heatmap {
         const cells = this.heatmapGroup.selectAll(".heatmap-cell")
             .data(matrix, d => `${d.sourceIP}-${d.destIP}`);
 
-        // update existing elements
-        cells
-            .attr("fill", d => colorScale(d.count))
-            .attr("stroke", d => {
-                const isSelected = store.getState().heatmapConfig.selectedCells.some(cell => cell.x === d.x && cell.y === d.y);
-                return isSelected ? "green" : filters.includes(d.classification) ? "red" : "none";
-            })
-            .attr("stroke-width", d => filters.includes(d.classification) ? 2 : 1);
-
         // add new elements and display html tooltip on mouse hover
         cells.enter()
             .append("rect")
@@ -185,7 +171,7 @@ class Heatmap {
             .attr("fill", d => colorScale(d.count))
             .attr("stroke", d => {
                 const isSelected = store.getState().heatmapConfig.selectedCells.some(cell => cell.x === d.x && cell.y === d.y);
-                return isSelected ? "green" : filters.includes(d.classification) ? "red" : "none";
+                return isSelected ? "green" : "none";
             })
             .attr("stroke-width", d => filters.includes(d.classification) ? 2 : 1)
             .on("click", (event, d) => {
@@ -195,7 +181,9 @@ class Heatmap {
                     .attr("stroke-width", 2);
             })
             .on("mouseover", (event, d) => {
-                tooltip.style("visibility", "visible")
+                tooltip.classed("visible", true)
+                    .style("top", `${event.pageY + 10}px`)
+                    .style("left", `${event.pageX + 10}px`)
                     .html(`
                         <strong>Source IP:</strong> ${d.sourceIP}<br>
                         <strong>Dest IP:</strong> ${d.destIP}<br>
@@ -206,11 +194,11 @@ class Heatmap {
                     `);
             })
             .on("mousemove", (event) => {
-                tooltip.style("top", (event.pageY + 10) + "px")
-                    .style("left", (event.pageX + 10) + "px");
+                tooltip.style("top", `${event.pageY + 10}px`)
+                    .style("left", `${event.pageX + 10}px`);
             })
             .on("mouseout", () => {
-                tooltip.style("visibility", "hidden");
+                tooltip.classed("visible", false);
             });
 
         // Remove old elements

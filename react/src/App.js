@@ -10,6 +10,7 @@ import GraphContainer from './components/Graph/GraphContainer';
 import ChordDiagramContainer from './components/ChordDiagram/ChordDiagramContainer'; // adjust path as needed
 import HistogramContainer from './components/Histogram/HistogramContainer';
 import HistoControlBar from './components/HistoControlBar/HistoControlBar';
+import TooltipPortal from './components/TooltipPortal/TooltipPortal';
 
 function App() {
   const dispatch = useDispatch();
@@ -46,16 +47,20 @@ function App() {
 
   return (
     <div className="App">
-      {console.log("App rendering")}
       <h2>Analysis of Bank of Money's Regional Office Operations</h2>
       {/* Menu */}
       <div className="menu">
-        <button className="page-button" onClick={() => handleMenuClick('Page1')}>IDS logs analysis</button>
-        <button className="page-button" onClick={() => handleMenuClick('Page2')}>Firewall logs analysis</button>
+        <button className="page-button" onClick={() => handleMenuClick("Page1")}>
+          IDS logs analysis
+        </button>
+        <button className="page-button" onClick={() => handleMenuClick("Page2")}>
+          Firewall logs analysis
+        </button>
       </div>
+
       {/* Page Content */}
       <div className="page-content">
-        {currentPage === 'Page1' && (
+        {currentPage === "Page1" && (
           <>
             {/* Control Bar */}
             <div id="control-container" className="controlRow">
@@ -63,6 +68,7 @@ function App() {
                 <ControlBar />
               </div>
             </div>
+
             {/* Visualization Container */}
             <div id="row-container">
               <StreamGraphComponent />
@@ -73,24 +79,29 @@ function App() {
             </div>
           </>
         )}
-        {currentPage === 'Page2' && (
-        <>
-          {/* Control Bar */}
-          <div id="control-container" className="controlRow">
+
+        {currentPage === "Page2" && (
+          <>
+            {/* Control Bar */}
+            <div id="control-container" className="controlRow">
               <div id="control-bar-container" className="controlBar">
-                < HistoControlBar />
+                <HistoControlBar />
               </div>
             </div>
-          {/* Chord Diagram and Histogram*/}
-            <div id="histogram-container" style={{height: "600px"}}> 
+
+            {/* Chord Diagram and Histogram */}
+            <div id="histogram-container" style={{ height: "600px" }}>
               <HistogramContainer />
             </div>
-            <div id="chord-container" style={{height: "1000px"}}>
+            <div id="chord-container" style={{ height: "1000px" }}>
               <ChordDiagramContainer />
             </div>
-        </>
-      )}
+          </>
+        )}
       </div>
+
+      {/* Tooltip Portal */}
+      <TooltipPortal />
     </div>
   );
 }

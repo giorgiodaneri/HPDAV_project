@@ -68,6 +68,7 @@ function HeatmapContainer() {
                 Clear Selection
             </button>
             <div style={{ width: '100%', height: '100%' }} ref={divContainerRef}></div>
+            <div id="tooltip-container"></div>
             {isLoading && (
                 <div className="loading-overlay">
                     <div className="spinner"></div>

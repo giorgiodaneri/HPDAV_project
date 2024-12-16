@@ -1,0 +1,23 @@
+#tooltip-container {
+    position: absolute;
+    pointer-events: none;
+    visibility: hidden;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    max-width: 250px;
+    word-wrap: break-word;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+  
+  #tooltip-container.visible {
+    visibility: visible;
+    opacity: 1;
+  }
+  
