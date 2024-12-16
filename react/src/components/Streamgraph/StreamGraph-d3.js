@@ -139,7 +139,6 @@ class StreamGraphD3 {
   }
   
   clearBrush() {
-    console.log("Clearing brush...");
     if (this.brushGroup) {
       this.brushGroup.call(d3.brushX().clear);
       this.currentBrushSelection = null; 
@@ -151,14 +150,12 @@ class StreamGraphD3 {
     .brushX()
     .extent([[0, 0], [this.width, this.height]])
     .on("start", () => {
-      console.log("Brushing started, disabling zoom");
       // Disable zooming during brushing
       d3.select(this.svgElement).on(".zoom", null);
     })
     .on("brush", (event) => this.updateBrushedData(event))
     .on("end", (event) => {
       this.updateBrushedData(event);
-      console.log("Brushing ended, re-enabling zoom");
       // Re-enable zooming after brushing
       this.enableZoom();
     });
@@ -185,8 +182,6 @@ class StreamGraphD3 {
         )
       )
       .map((layer) => layer.key); // Extract the classification keys
-      //console.log(brushedClassifications);
-      //console.log(selectedRange);
     if (this.brushedCallback) {
       this.brushedCallback({ range: selectedRange, classifications: brushedClassifications });
     }

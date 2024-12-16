@@ -164,23 +164,6 @@ class ChordDiagram {
     renderChordDiagram(data, startTime, endTime, displayFirewall, dest_services, topIPsCount) {
         this.clear();
 
-        //log dest_service
-        console.log(`FILTEO : dest_services: ${dest_services}`);
-        //const filteredData = data.map(d => ({
-        //    time: this.parseTime(d.time),
-        //    sourceip: d.sourceip,
-        //    destip: d.destip,
-        //    dest_service: d.dest_service,
-        //}))
-        //.filter(d => d.time >= this.parseTime(startTime) && d.time <= this.parseTime(endTime))
-        //.filter(d => {
-        //    const isAllowed = this.allowedServices.includes(d.dest_service);
-        //    
-        //    //log comparison
-        //    console.log(`d.dest_service: ${d.dest_service}, allowedServices: ${this.allowedServices}`);
-        //    return isAllowed;
-        //});
-
         const filteredData = data.map(d => ({
             time: this.parseTime(d.time),
             sourceip: d.sourceip,
@@ -189,12 +172,7 @@ class ChordDiagram {
         }))
         .filter(d => d.time >= this.parseTime(startTime) && d.time <= this.parseTime(endTime))
         .filter(d => {
-            
             const isAllowed = dest_services.includes(d.dest_service);
-            if( isAllowed ){
-               // console.log(`ddddddddddddddd d.dest_service: ${d.dest_service}, dest_services: ${dest_services}`);
-            }
-            // Debug log to verify filtering
             return isAllowed;
         });
         
@@ -232,7 +210,6 @@ class ChordDiagram {
                 // Find the service with the highest count
                 const mostFrequentService = Array.from(serviceCounts)
                     .sort((a, b) => b[1] - a[1])[0][0]; // [0] is the service, [1] is the count
-                //console.log(`mostFrequentService: ${mostFrequentService}`);
                 return mostFrequentService;
             },
             d => `${d.sourceip}-${d.destip}` // Group by connection (source IP -> dest IP)
