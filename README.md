@@ -1,4 +1,9 @@
-# HPDAV Project
+# Network Forensics: Analysis of Bank of Money’s Regional Office Operations
+This project was carried out during the High Performance Data Analytics and Visualization course, part of the Master in High Performance Computing at the University of Luxembourg, by the following students:
+1. Giorgio Daneri (giorgio.daneri.001@student.uni.lu)
+2. Nicola De March (nicola.demarch.001@student.uni.lu)
+3. Bice Marzagora (bice.marzagora.001@student.uni.lu)
+
 ## Pipeline setup
 Since the datasets are quite large, especially the one corresponding to the firewall, we need to apply an initial filtering to make them more easily processable. This is done by placing all the datasets in a folder called ```MC2-CSVFirewallandIDSlogs``` in your local environment, then running the following python scripts:
 1. ```filter_firewall.py```: This script filters out the most cumbersome files, i.e. the firewall logs, which size are concatenated and transformed according to different mapping rules, applied to categorical attributes. 
