@@ -1,4 +1,4 @@
-W"<html xmlns:v="urn:schemas-microsoft-com:vml"
+<html xmlns:v="urn:schemas-microsoft-com:vml"
 xmlns:o="urn:schemas-microsoft-com:office:office"
 xmlns:w="urn:schemas-microsoft-com:office:word"
 xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
@@ -538,14 +538,10 @@ div.WordSection1
 
 <div class=WordSection1>
 
-<h3 >Packaging and Submitting Your Entry</h3>
-
-
 <h2 align=center style='margin:0in;margin-bottom:.0001pt;text-align:center'><i
 style='font-size:14.0pt;font-family:"Calibri","sans-serif";mso-ascii-theme-font:
 minor-latin;mso-fareast-font-family:"Times New Roman";mso-hansi-theme-font:
-minor-latin;mso-bidi-theme-font:minor-latin'><span style='mso-spacerun:yes'></span>&quot;
-HPDAV Project&quot;</span><span
+minor-latin;mso-bidi-theme-font:minor-latin'><span style='mso-spacerun:yes'></span>HPDAV Project</span><span
 style='font-size:14.0pt;font-family:"Calibri","sans-serif";mso-ascii-theme-font:
 minor-latin;mso-fareast-font-family:"Times New Roman";mso-hansi-theme-font:
 minor-latin;mso-bidi-theme-font:minor-latin'><o:p></o:p></span></h2>
@@ -597,13 +593,20 @@ minor-latin'><o:p></o:p></span></p>
 font-family:"Calibri","sans-serif";mso-ascii-theme-font:minor-latin;mso-fareast-font-family:
 "Times New Roman";mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'><o:p>&nbsp;</o:p></span></h3>
 
-<h3 style='margin:0in;margin-bottom:.0001pt'><span style='font-size:12.0pt;
-font-family:"Calibri","sans-serif";mso-ascii-theme-font:minor-latin;mso-fareast-font-family:
-"Times New Roman";mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'>Tools used:<o:p></o:p></span></h3>
+<h2>Design choice explanation</h2>
+We performed several investigations of the datasets prior to conceiving and building the visualization.
+This was an important step to assess the information to be conveyed, as well as the best visualization
+tools to display it. The visualization must be driven by the findings, not the other way around. We will
+pinpoint and describe the five main events happened in the time frame covered by the logs, according
+to our analysis. All these are included in the analysis results notebook, which also offers a some raw
+visualizations of the information of our interest. We used python to produce some preliminary plots, which 
+played an pivotal role in finding out key information, and costitute the basis for more refined visualizations.
+The design and organization of the dashboard components developed in React and D3 came later on, when we had already   
+drawn some conclusions from the data analysis. 
 
-<h3 style="margin:0in;">Design choice explanation:</h3>
-<p>
-    The first key step was to pre-process the data in order to remove irrelevant information and map to
+<h2>Data Analysis and Findings</h2>
+
+The first key step was to pre-process the data in order to remove irrelevant information and map to
 numerical values the attributes that have a limited number of unique values in the form of strings. The
 use of a mapping from a set of strings to a set of numerical values is written to a file so that it can be
 used later on to reinstate the semantics of what would otherwise be meaningless numerical values. These
@@ -622,55 +625,11 @@ is launched, making sure they are executed only once, not every time the server 
 was made to ensure that the computational load of the server is limited to loading the sampled datasets,
 eventually applying pagination and transmitting them to the javascript application. Also, the server uses
 caching to improve the overall efficiency, so that it reads the datasets from the memory only once.
-</p>
-
-<h2>Data Analysis and Findings</h2>
-<p>
-    We performed several investigations of the datasets prior to conceiving and building the visualization.
-    This was an important step to assess the information to be conveyed, as well as the best visualization
-    tools to display it. The visualization must be driven by the findings, not the other way around. Let us
-    pinpoint and describe the five main events happened in the time frame covered by the logs, according
-    to our analysis. All these are included in the analysis results notebook, which also offers a some raw
-    visualizations of the information of our interest.</p>
-
-
-
-
-
-
-<ul style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
-minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin;background:yellow;mso-highlight:yellow'>
-<li>Give a clear explanation of your starting point for analysis and how
-you selected it</li>
-<li>Explain your rationale for important design decisions.</li>
-<li>Explain how the visualization and interactions helped in the
-analysis.</li>
-<li>If filters or transformations are applied, explain what was used and
-in what sequence they were applied.</li>
-<li>If there are anomalies shown in a visualization, explain how they
-are factored into the analysis.</li>
-<li>Describe any important assumptions you made.</li>
-<li>Answer the specific questions for this mini-challenge. These
-questions appear in the submission form below.</li>
-</ul>
 
 <p class=MsoNormal><span style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
 minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
-minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'><o:p>&nbsp;</o:p></span></p>
-
-<p class=MsoNormal><span style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
-minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'>&nbsp;<o:p></o:p></span></p>
-
-<p class=MsoNormal><span style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
-minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'>&nbsp;<o:p></o:p></span></p>
-
-<p class=MsoNormal><b><span style='font-family:"Calibri","sans-serif";
-mso-ascii-theme-font:minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:
-minor-latin'>Answers to Mini-Challenge 2 Questions:</span></b><span
-style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:minor-latin;
-mso-hansi-theme-font:minor-latin;mso-bidi-theme-font:minor-latin'><o:p></o:p></span></p>
+<h2> Answers to Mini-Challenge 2 Questions</h2>
 
 <p class=MsoNormal><span style='font-family:"Calibri","sans-serif";mso-ascii-theme-font:
 minor-latin;mso-fareast-font-family:"Times New Roman";mso-hansi-theme-font:
