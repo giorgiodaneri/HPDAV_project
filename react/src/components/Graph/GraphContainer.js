@@ -119,7 +119,9 @@ const GraphContainer = () => {
       <div style={{ marginTop: '10px', fontSize: '16px', display: 'flex', justifyContent: 'center' }}>
         <p style={{ marginRight: '20px' }}><span style={{ color: '#7f7f7f', fontSize: '24px' }}>●</span> Workstations</p>
         <p style={{ marginRight: '20px' }}><span style={{ color: '#ff7f0e', fontSize: '24px'}}>●</span> Websites</p>
-        <p><span style={{ color: '#bcbd22', fontSize: '24px' }}>●</span> Nodes connected with DNS</p>
+        <p style={{ marginRight: '20px' }}><span style={{ color: '#bcbd22', fontSize: '24px' }}>●</span> Nodes connected with DNS</p>
+        <p style={{ marginRight: '20px' }}><span style={{ color: '#FF0000', fontSize: '24px' }}>●</span> Firewall</p>
+      
       </div>
       <svg ref={svgRef} style={{ width: '100%', height: '700px' }}></svg>
     </div>

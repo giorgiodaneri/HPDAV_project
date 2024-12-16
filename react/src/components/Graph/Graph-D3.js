@@ -7,6 +7,7 @@ class GraphD3 {
     this.svg = d3.select(svgElement);
     this.width = svgElement.clientWidth;
     this.height = svgElement.clientHeight;
+    this.firewallIPs = new Set(["10.32.0.1", "172.23.0.1", "10.32.0.100", "172.25.0.1"]);
 
     this.DSN_width = 60;
     this.DSN_height = 400;
@@ -51,13 +52,18 @@ class GraphD3 {
             node.opacity = 0.6;
             node.color = d3.color(colorMap[8]);
           }
+          if (this.firewallIPs.has(node.id)) {
+            // Assign a distinct firewall color
+            node.color = "red"; 
+            console.log(node.color);
+            }
         } else {
           node.r = 20;
-          node.opacity = 0.7;
-          node.color = d3.color(colorMap[node.value.type]);
+          node.opacity = 0.7;         
+          node.color = d3.color(colorMap[node.value.type]);}
         }
       }
-    });
+    );
 
     links.forEach(link => {
       link.opacity = this.getOpacity(link.value / link.max_value);
@@ -150,8 +156,12 @@ class GraphD3 {
       .merge(this.node)
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
-      .on('mouseover', (event, d) => this.showTooltip(event, d))
-      .on('mousemove', (event) => this.moveTooltip(event))
+      .merge(this.node)
+      
+      .on('contextmenu', (event, d) => {
+        event.preventDefault(); // Prevent the default right-click menu
+        this.showTooltip(event, d);
+      })
       .on('mouseout', () => this.hideTooltip());
 
     this.link = this.link.data(links);
