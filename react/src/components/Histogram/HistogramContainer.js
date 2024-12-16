@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import './Histogram.css';
 import Histogram from './Histogram';
+import './Histogram.css';
 
 
 function HistogramContainer() {
-    // const data = useSelector((state) => state.histogramData.data);
     const data = useSelector((state) => state.firewallDataSet.data);
     const hasMore = useSelector((state) => state.firewallDataSet.hasMore);
     const timeRange = useSelector((state) => state.histoConfig.timeRange);
@@ -25,7 +24,7 @@ function HistogramContainer() {
         height: divContainerRef.current.offsetHeight
     });
 
-    // Initialize the histogram when the component is mounted
+    // initialize the histogram when the component is mounted
     useEffect(() => {
         const histogram = new Histogram(divContainerRef.current);
         const size = getCharSize();
@@ -35,7 +34,7 @@ function HistogramContainer() {
         return () => histogramRef.current.clear();
     }, []);
 
-    // Update histogram rendering based on time range and filters
+    // update histogram rendering based on time range and filters
     useEffect(() => {
         if (data && startTime && endTime && dest_services && binWidth) {
             if(hasMore && hasMore === true){

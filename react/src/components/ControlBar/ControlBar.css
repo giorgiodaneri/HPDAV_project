@@ -23,12 +23,12 @@
   .slider-group {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Make the slider grow to take available space */
+    flex-grow: 1; 
     align-items: flex-start;
   }
   
   .time-slider {
-    width: 100%; /* Make the slider fill the width of its container */
+    width: 100%; 
     height: 5px;
     background: #ddd;
     position: relative;
@@ -49,7 +49,7 @@
     justify-content: space-between;
     font-size: 16px;
     width: 100%;
-    margin-top: 5px;  /* Add some space between the slider and labels */
+    margin-top: 5px;  
   }
   
   .slider-labels .left {

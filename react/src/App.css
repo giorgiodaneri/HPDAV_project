@@ -41,22 +41,22 @@ html, body {
 
 #visualization-row {
   display: flex;
-  flex-direction: row; /* Ensure items are side-by-side */
+  flex-direction: row; 
   width: 100%;
-  height: 100%; /* Set a consistent height for the containers */
-  gap: 10px; /* Add a small gap between the two charts */
+  height: 100%; 
+  gap: 10px; 
 }
 
 #chord-container, 
 #histogram-container {
-  flex: 1; /* Distribute space equally between the containers */
+  flex: 1; 
   display: flex;
-  justify-content: center; /* Center the content horizontally */
-  align-items: center; /* Center the content vertically */
-  border: 1px solid #ddd; /* Add a subtle border for distinction */
-  background-color: #f9f9f9; /* Add a light background for contrast */
-  padding: 10px; /* Add some padding around the containers */
-  box-sizing: border-box; /* Ensure padding doesn't affect container size */
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd; 
+  background-color: #f9f9f9; 
+  padding: 10px; 
+  box-sizing: border-box; 
 }
 
 #chord-container svg, 

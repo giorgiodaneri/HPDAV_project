@@ -143,7 +143,7 @@ class Heatmap {
             .domain(topDestIPs)
             .range([0, this.height])
             .padding(0.05);
-
+        // tooltip for each cell
         const tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("position", "absolute")
@@ -161,11 +161,11 @@ class Heatmap {
             3: "Attempted Information Leak",
             4: "Potentially Bad Traffic"
         };
-
+        // use a unique key for each cell based on source and dest IP
         const cells = this.heatmapGroup.selectAll(".heatmap-cell")
-            .data(matrix, d => `${d.sourceIP}-${d.destIP}`); // Use a unique key to bind data
+            .data(matrix, d => `${d.sourceIP}-${d.destIP}`);
 
-        // Update existing elements
+        // update existing elements
         cells
             .attr("fill", d => colorScale(d.count))
             .attr("stroke", d => {
@@ -174,7 +174,7 @@ class Heatmap {
             })
             .attr("stroke-width", d => filters.includes(d.classification) ? 2 : 1);
 
-        // Add new elements
+        // add new elements and display html tooltip on mouse hover
         cells.enter()
             .append("rect")
             .attr("class", "heatmap-cell")

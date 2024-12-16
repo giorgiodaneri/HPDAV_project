@@ -21,27 +21,14 @@ function HeatmapContainer() {
         height: divContainerRef.current.offsetHeight,
     });
 
-    // Initialize the heatmap when the component is mounted
+    // initialize the heatmap when the component is mounted
     useEffect(() => {
         const heatmap = new Heatmap(divContainerRef.current);
         heatmap.create({ size: getCharSize() });
         HeatmapRef.current = heatmap;
-
+        setIsLoading(true);
         return () => HeatmapRef.current.clear();
     }, []);
-
-    // Extract unique time slices and render the initial heatmap
-    useEffect(() => {
-        if (data) {
-            const uniqueTimes = Array.from(new Set(data.map((d) => d.time))).sort();
-            setIsLoading(false);
-
-            const heatmap = HeatmapRef.current;
-            heatmap.renderHeatmap(data, uniqueTimes[0], null, filters);
-        } else {
-            console.log("HeatmapContainer data is null");
-        }
-    }, [data, filters]);
 
     // Update heatmap rendering based on time range and filters
     useEffect(() => {
@@ -52,13 +39,13 @@ function HeatmapContainer() {
         }
     }, [data, startTime, endTime, filters]);
 
-    // Handle Clear Selection
+    // handle Clear Selection
     const handleClearSelection = () => {
-        dispatch(clearSelectedCells()); // Clear selected cells in Redux
+        dispatch(clearSelectedCells()); 
 
         const heatmap = HeatmapRef.current;
         if (heatmap) {
-            heatmap.renderHeatmap(data, startTime, endTime, filters); // Re-render the heatmap
+            heatmap.renderHeatmap(data, startTime, endTime, filters);
         }
 
         console.log('Selected cells cleared and heatmap re-rendered');

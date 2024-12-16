@@ -42,7 +42,7 @@ class Histogram {
             .attr('text-anchor', 'middle')
             .attr('transform', 'rotate(-90)')
             .attr('x', -this.height / 2)
-            .attr('y', -this.margin.left + 15)
+            .attr('y', -this.margin.left + 14)
             .text('Occurrences');
     }
 
@@ -53,33 +53,31 @@ class Histogram {
         this.svg = null;
     }
 
+    // method to parse time into a string of seconds
     parseTime(timeStr) {
         if (!timeStr || typeof timeStr !== 'string') {
             console.warn("Invalid or missing time string:", timeStr);
             return 0;
         }
-
         const [day, time] = timeStr.split(" ");
         if (!time || !day) {
             console.warn("Invalid time format:", timeStr);
             return 0;
         }
-
         const [hours, minutes, seconds] = time.split(":").map(Number);
         if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
             console.warn("Invalid time format (hours, minutes, or seconds are NaN):", timeStr);
             return 0;
         }
-
         return day * 1440 + hours * 60 + minutes + seconds / 60;
     }
 
-    formatTime(minutes) {
+    // method to format time in D HH:MM format to be displayed on the x-axis
+    formatTimeAxis(minutes) {
         const days = Math.floor(minutes / 1440);
         const hours = Math.floor((minutes % 1440) / 60);
         const mins = minutes % 60;
-        const secs = Math.round((mins % 1) * 60);
-        return `${days} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${String(secs).padStart(2, '0')}`;
+        return `${days} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     }
 
     convertToSecondsFormat(timeStr) {
@@ -87,32 +85,26 @@ class Histogram {
             console.warn("Invalid or missing time string:", timeStr);
             return null;
         }
-    
-        // Check if timeStr already has seconds (D HH:MM:SS format)
+        // check if timeStr already has seconds (D HH:MM:SS format)
         const hasSeconds = timeStr.split(" ")[1]?.split(":").length === 3;
         if (hasSeconds) {
-            return timeStr; // Already in correct format
+            return timeStr; 
         }
-    
-        // Append ":00" to add seconds
+        // append ":00" to add seconds
         const [day, time] = timeStr.split(" ");
         if (!day || !time) {
             console.warn("Invalid time format for conversion:", timeStr);
             return null;
         }
-    
         return `${day} ${time}:00`;
     }
 
     renderHistogram(data, binWidth, startTime, endTime, dest_services, selected_ip, ipToggle, showAllServices) {
-        this.binWidth = binWidth;
-        console.log("Show all services in histo: ", showAllServices);
-    
-        // Clear all existing elements before rerendering
+        this.binWidth = binWidth;    
+        // clear all existing elements before rerendering
         this.chart.selectAll('*').remove();
-    
         if (dest_services.length === 0 || binWidth === 0) {
-            // Show a message when no services are selected or the bin width is 0
+            // show a message when no services are selected or the bin width is 0
             this.chart.append('text')
                 .attr('x', this.width / 2)
                 .attr('y', this.height / 2)
@@ -123,33 +115,17 @@ class Histogram {
                 .text('No service selected');
             return; 
         }
-
-        // Tooltip setup
-        const tooltip = d3.select('body').append('div')
-        .attr('class', 'tooltip')
-        .style('position', 'absolute')
-        .style('background-color', '#f9f9f9')
-        .style('border', '1px solid #ccc')
-        .style('border-radius', '4px')
-        .style('padding', '10px')
-        .style('font-size', '12px')
-        .style('font-family', 'Arial, sans-serif')
-        .style('display', 'none')
-        .style('pointer-events', 'none');
     
-        // Convert startTime and endTime to include seconds
+        // convert startTime and endTime to include seconds
         const formattedStartTime = this.convertToSecondsFormat(startTime);
         const formattedEndTime = this.convertToSecondsFormat(endTime);
-    
         if (!formattedStartTime || !formattedEndTime) {
             console.error("Failed to format start or end time");
             return;
         }
-    
         const parsedStartTime = this.parseTime(formattedStartTime);
         const parsedEndTime = this.parseTime(formattedEndTime);
-    
-        // Parse time values and filter data within the desired range
+        // parse time values and filter data within the desired range
         let filteredData = data.map(d => ({
             time: this.parseTime(d.time),
             sourceip: d.sourceip,
@@ -160,24 +136,21 @@ class Histogram {
             action: d.action
         })).filter(d => !isNaN(d.time));
 
-        // Filter data based on selected_ip, if provided
+        // filter data based on selected_ip, if provided
         if (selected_ip.length > 0) {
             if(ipToggle){
                 const ipExists = filteredData.some(d => d.destip === selected_ip);
                 if (ipExists) {
                     filteredData = filteredData.filter(d => d.destip === selected_ip);
-                } else {
-                    console.warn("Selected IP does not exist in the data. Falling back to default behavior.");
-                }
+                } 
             } else {
                 const ipExists = filteredData.some(d => d.sourceip === selected_ip);
                 if (ipExists) {
                     filteredData = filteredData.filter(d => d.sourceip === selected_ip);
-                } else {
-                    console.warn("Selected IP does not exist in the data. Falling back to default behavior.");
-                }
+                } 
             }
         }
+        // if the user did not check the "Show All Services" checkbox, filter data based on dest_services
         if(!showAllServices){
             filteredData = filteredData.filter(d => {
                 const serviceFilter = dest_services.length === 0 || dest_services.includes(d.dest_service);
@@ -188,74 +161,76 @@ class Histogram {
         const timeInRange = timeValues.filter(time => time >= parsedStartTime && time <= parsedEndTime);
         const uniqueDestServices = Array.from(new Set(filteredData.map(d => d.dest_service)));
 
+        let xDomain = d3.extent(timeInRange);
+        if (xDomain[0] === xDomain[1]) {
+            const center = xDomain[0];
+            xDomain = [center - binWidth, center + binWidth];
+        }
+        // adjust the domain to include the full width of the last bin, otherwise it will be cut off
+        xDomain[1] = xDomain[1] + binWidth;
         const x = d3.scaleLinear()
-            .domain(d3.extent(timeInRange)) // Set domain based on the data extent
+            .domain(xDomain)
             .range([0, this.width]);
-    
-        // Create bins using d3.bin
         const bin = d3.bin()
-            .thresholds(d3.range(d3.min(timeInRange), d3.max(timeInRange), this.binWidth));
-    
-        // Calculate bins based on the time data
+        .domain(xDomain)
+        .thresholds(Math.ceil((xDomain[1] - xDomain[0]) / binWidth));
+        // compute bins based on the time data
         const bins = bin(timeInRange);
-    
-        // Group data in each bin by dest_service
+        // ensure the last bin is included
+        if (bins.length > 0 && bins[bins.length - 1].x1 < xDomain[1]) {
+            bins.push({
+                x0: bins[bins.length - 1].x1,
+                x1: xDomain[1],
+                groups: new Map()
+            });
+        }
+        // group data in each bin by dest_service
         bins.forEach(bin => {
             bin.groups = d3.group(
                 filteredData.filter(d => d.time >= bin.x0 && d.time < bin.x1),
                 d => d.dest_service
             );
         });
-    
+        // define custom colors for each service that can be selected (13 in total)
         const customColors = [
             '#1f77b4', '#ff0000', '#2ca02c', '#d62728', '#9467bd',
             '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
             '#8a2be2', '#ff6347', '#32cd32'
         ];
-        
-        let colorScale = d => '#32cd32'; // Default color (gray) if not enough services
+        // default color
+        let colorScale = d => '#32cd32'; 
         if (uniqueDestServices.length <= 13) {
             colorScale = d3.scaleOrdinal(customColors).domain(uniqueDestServices);
         }
-
-        // Calculate the max stacked height for y-axis scaling
+        // compute the max stacked height for y-axis scaling
         const maxStackHeight = d3.max(bins, bin =>
             d3.sum([...bin.groups.values()].map(group => group.length))
         );
-    
         const y = d3.scaleLinear()
             .domain([0, maxStackHeight])
             .range([this.height, 0]);
-    
         const xAxis = d3.axisBottom(x)
             .ticks(15)
-            .tickFormat(d => this.formatTime(d));
-    
+            .tickFormat(d => this.formatTimeAxis(d));
         const yAxis = d3.axisLeft(y).ticks(5);
-    
-        // Create axes
         this.chart.append('g')
             .attr('class', 'x-axis')
             .attr('transform', `translate(0, ${this.height})`)
             .call(xAxis)
             .selectAll('text')
             .attr('transform', 'rotate(-45)')
-            .style('text-anchor', 'end');
-    
+            .style('text-anchor', 'end');    
         this.chart.append('g')
             .attr('class', 'y-axis')
             .call(yAxis)
             .selectAll('text')
             .attr('transform', 'translate(-10,0)')
-    
-        // Add labels
         this.chart.append('text')
             .attr('class', 'x-label')
             .attr('x', this.width / 2)
             .attr('y', this.height + this.margin.bottom - 2)
             .style('text-anchor', 'middle')
             .text('Time');
-    
         this.chart.append('text')
             .attr('class', 'y-label')
             .attr('x', -this.height / 2)
@@ -264,17 +239,15 @@ class Histogram {
             .style('text-anchor', 'middle')
             .text('Count');
     
-        // Bind bins to bar groups
+        // bind bins to bar groups
         const barGroups = this.chart.selectAll('.bar-group')
-            .data(bins, d => d.x0); // Use `x0` as key for binding
-    
-        // Handle enter: Append new bar groups
+            .data(bins, d => d.x0); 
+        // append new bar groups
         const newBarGroups = barGroups.enter()
             .append('g')
             .attr('class', 'bar-group')
             .attr('transform', d => `translate(${x(d.x0)}, 0)`);
-    
-        // Handle enter + update: Add or update stacked rectangles within each bar group
+        // add or update stacked rectangles within each bar group
         newBarGroups.merge(barGroups)
             .selectAll('rect')
             .data(d => {
@@ -309,23 +282,20 @@ class Histogram {
                 exit => exit.remove()
             );
     
-        // Add legend if there are 13 or more services
+        // add legend if the user did not check the "Show All Services" checkbox
         if (uniqueDestServices.length <= 13) {
             const legend = this.chart.append('g')
                 .attr('class', 'legend')
                 .attr('transform', `translate(-45, -20)`);
-
             const legendItems = legend.selectAll('.legend-item')
                 .data(uniqueDestServices)
                 .enter().append('g')
                 .attr('class', 'legend-item')
                 .attr('transform', (d, i) => `translate(${i * 90}, 0)`);
-
             legendItems.append('rect')
                 .attr('width', 12)
                 .attr('height', 12)
                 .style('fill', d => colorScale(d));
-
             legendItems.append('text')
                 .attr('x', 15)
                 .attr('y', 7)

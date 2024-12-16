@@ -13,19 +13,20 @@ import HistoControlBar from './components/HistoControlBar/HistoControlBar';
 
 function App() {
   const dispatch = useDispatch();
-  const [currentPage, setCurrentPage] = useState('Page1'); // State to track the active page
+  const [currentPage, setCurrentPage] = useState('Page1'); 
   const firewallStatus = useSelector((state) => state.firewallDataSet.status);
   const { data, total, hasMore, error } = useSelector((state) => state.firewallDataSet);
-  const [page, setPage] = useState(1); // State for the current page
-  const pageSize = 700000; // Number of records to fetch per page
+  // variables to handle loading of paginated data
+  const [page, setPage] = useState(1); 
+  const pageSize = 700000; 
 
   useEffect(() => {
     console.log("App useEffect");
     dispatch(getProjectionData());
-  }, [dispatch]); // empty dependencies [] <=> component did mount
+  }, [dispatch]); 
 
   useEffect(() => {
-    // Fetch data for the current page
+    // fetch data for the current page
     if (firewallStatus === 'idle' || firewallStatus === 'succeeded') {
       if (hasMore) {
         dispatch(getFirewallData({ page, pageSize }));
@@ -34,15 +35,11 @@ function App() {
   }, [dispatch, page, firewallStatus, hasMore, pageSize]);
 
   useEffect(() => {
-    // If new data has been loaded, move to the next page
+    // if new data has been loaded, move to the next page
     if (hasMore) {
       setPage((prevPage) => prevPage + 1);
     }
-  }, [data, hasMore]); // Trigger page increment when new data is available
-
-  // if (firewallStatus === 'loading') return <p>Loading firewall data...</p>;
-  // if (firewallStatus === 'failed') return <p>Error loading firewall data: {error}</p>;
-
+  }, [data, hasMore]); 
   const handleMenuClick = (page) => {
     setCurrentPage(page);
   };
@@ -51,23 +48,11 @@ function App() {
     <div className="App">
       {console.log("App rendering")}
       <h2>Analysis of Bank of Money's Regional Office Operations</h2>
-
       {/* Menu */}
       <div className="menu">
-
-      <button className="page-button" onClick={() => handleMenuClick('Page1')}>IDS logs analysis</button>
+        <button className="page-button" onClick={() => handleMenuClick('Page1')}>IDS logs analysis</button>
         <button className="page-button" onClick={() => handleMenuClick('Page2')}>Firewall logs analysis</button>
-       
-      {/* {firewallStatus === 'loading' ? (
-        <p>Loading firewall data...</p>
-      ) : (
-        <>
-          <button onClick={() => handleMenuClick('Page1')}>Page 1</button>
-          <button onClick={() => handleMenuClick('Page2')}>Page 2</button>
-        </>
-      )} */}
       </div>
-
       {/* Page Content */}
       <div className="page-content">
         {currentPage === 'Page1' && (
@@ -78,7 +63,6 @@ function App() {
                 <ControlBar />
               </div>
             </div>
-
             {/* Visualization Container */}
             <div id="row-container">
               <StreamGraphComponent />
@@ -97,7 +81,6 @@ function App() {
                 < HistoControlBar />
               </div>
             </div>
-          
           {/* Chord Diagram and Histogram*/}
             <div id="histogram-container" style={{height: "600px"}}> 
               <HistogramContainer />
@@ -107,7 +90,6 @@ function App() {
             </div>
         </>
       )}
-
       </div>
     </div>
   );
