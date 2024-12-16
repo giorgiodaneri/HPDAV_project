@@ -12,18 +12,18 @@ export const getProjectionData = createAsyncThunk('projectionData/fetchData', as
 export const dataSetSlice = createSlice({
   name: 'dataSet',
   initialState: {
-    data: [], // Ensure `data` is initialized as an empty array
-    selectedTimeRange: null, // Selected time range from the brush
-    selectedClassifications: [], // Selected classifications within the range
+    data: [], 
+    selectedTimeRange: null, 
+    selectedClassifications: [],
     status: 'idle',
     error: null,
   },
   reducers: {
     updateSelectedTimeRange: (state, action) => {
-      state.selectedTimeRange = action.payload; // Store selected time range in the streamgraph
+      state.selectedTimeRange = action.payload; 
     },
     updateSelectedClassifications: (state, action) => {
-      state.selectedClassifications = action.payload; // Store classifications within the range of streamgraph
+      state.selectedClassifications = action.payload; 
     },
   },
   extraReducers: (builder) => {
@@ -34,15 +34,15 @@ export const dataSetSlice = createSlice({
       })
       .addCase(getProjectionData.fulfilled, (state, action) => {
         if (action.payload && action.payload.dataset) {
-          state.data = JSON.parse(action.payload.dataset); // Ensure correct parsing
+          state.data = JSON.parse(action.payload.dataset); 
           state.status = 'succeeded';
         } else {
-          state.data = []; // If no dataset, ensure `data` is set to an empty array
+          state.data = []; 
           state.status = 'failed';
         }
       })
       .addCase(getProjectionData.rejected, (state, action) => {
-        state.data = []; // Reset `data` to an empty array on error
+        state.data = []; 
         state.status = 'failed';
         state.error = action.error.message;
       });

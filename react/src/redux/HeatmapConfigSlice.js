@@ -5,7 +5,7 @@ export const heatmapConfigSlice = createSlice({
   initialState: {
     filters: [0, 1, 2, 3, 4],
     timeRange: ['5 17:55', '7 08:59'],
-    selectedCells: [], // Add this for storing selected cells
+    selectedCells: [],
   },
   reducers: {
     generateFromConfig: (state, action) => {
@@ -13,7 +13,7 @@ export const heatmapConfigSlice = createSlice({
       state.timeRange = action.payload.timeRange;
     },
     addSelectedCell: (state, action) => {
-      // Avoid duplicate selections
+      // avoid duplicate selections
       if (!state.selectedCells.some(cell => cell.x === action.payload.x && cell.y === action.payload.y)) {
         state.selectedCells.push(action.payload);
       }

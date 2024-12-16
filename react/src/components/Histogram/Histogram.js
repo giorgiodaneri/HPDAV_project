@@ -143,11 +143,32 @@ class Histogram {
                 if (ipExists) {
                     filteredData = filteredData.filter(d => d.destip === selected_ip);
                 } 
+                else {
+                    this.chart.append('text')
+                        .attr('x', this.width / 2)
+                        .attr('y', this.height / 2)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '16px')
+                        .style('fill', 'gray')
+                        .style('font-family', 'Arial, sans-serif')
+                        .text('No data corresponding to the selected IP');
+                    return; 
+                }
             } else {
                 const ipExists = filteredData.some(d => d.sourceip === selected_ip);
                 if (ipExists) {
                     filteredData = filteredData.filter(d => d.sourceip === selected_ip);
-                } 
+                } else {
+                    this.chart.append('text')
+                        .attr('x', this.width / 2)
+                        .attr('y', this.height / 2)
+                        .attr('text-anchor', 'middle')
+                        .style('font-size', '16px')
+                        .style('fill', 'gray')
+                        .style('font-family', 'Arial, sans-serif')
+                        .text('No data corresponding to the selected IP');
+                    return; 
+                }
             }
         }
         // if the user did not check the "Show All Services" checkbox, filter data based on dest_services
@@ -167,6 +188,7 @@ class Histogram {
             xDomain = [center - binWidth, center + binWidth];
         }
         // adjust the domain to include the full width of the last bin, otherwise it will be cut off
+        xDomain[0] = xDomain[0] - (binWidth/2);
         xDomain[1] = xDomain[1] + binWidth;
         const x = d3.scaleLinear()
             .domain(xDomain)

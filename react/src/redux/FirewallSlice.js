@@ -58,9 +58,6 @@ export const firewallSlice = createSlice({
         state.total = total;
         state.hasMore = state.data.length < total; 
         state.status = 'succeeded';
-        // if(state.data.length > 0) {
-        //   console.log(JSON.parse(JSON.stringify(state.data[0])));
-        // }
       })
       .addCase(getFirewallData.rejected, (state, action) => {
         state.status = 'failed';

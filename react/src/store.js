@@ -7,11 +7,11 @@ import histoConfigReducer from './redux/HistoConfigSlice';
 
 const store = configureStore({
   reducer: {
-    dataSet: dataSetReducer, // Register the `dataSet` slice here
-    streamGraph: streamGraphReducer, // stream graph reducer
+    dataSet: dataSetReducer, 
+    streamGraph: streamGraphReducer, 
     heatmapConfig: heatmapConfigReducer, 
-    firewallDataSet: firewallReducer, // Register the `firewallDataSet` slice
-    histoConfig: histoConfigReducer, // Register the `histo
+    firewallDataSet: firewallReducer, 
+    histoConfig: histoConfigReducer,
   },
 });
 
