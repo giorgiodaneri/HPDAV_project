@@ -11,17 +11,11 @@ class GraphD3 {
 
     this.DSN_width = 60;
     this.DSN_height = 400;
-    // Create a tooltip element
-    this.tooltip = d3.select('body').append('div')
-      .attr("class", "tooltip")
-      .style("position", "absolute")
-      .style("visibility", "hidden")
-      .style("background-color", "rgba(0,0,0,0.7)")
-      .style("color", "white")
-      .style("border-radius", "5px")
-      .style("padding", "5px")
-      .style('color', 'white')
-      .style("pointer-events", "none");
+
+    // Instead of creating a new tooltip div, we select an existing container,
+    // similar to how it was done in the first snippet.
+    // Make sure you have a <div id="tooltip-container"></div> in your HTML.
+    this.tooltip = d3.select("#tooltip-container");
   }
   
   initializeGraph(nodes, links) {
@@ -40,13 +34,12 @@ class GraphD3 {
         node.x = x;
         node.y = y;
         if (node.value.type != 2 && node.value.type != 3) {
-          if(node.value.count !== 0){
+          if (node.value.count !== 0) {
             node.r = Math.min(nodeWidthConstantMap[node.value.type] * (node.value.count / node.value.total_count), 20);
             node.r = Math.max(node.r, 4);
             node.opacity = 0.8;
             node.color = d3.color(colorMap[node.value.type]);
-          }
-          else{
+          } else {
             node.r = Math.min(nodeWidthConstantMap[4] * (node.value.dns_connection / node.value.total_dns_connection), 20);
             node.r = Math.max(node.r, 4);
             node.opacity = 0.6;
@@ -55,15 +48,14 @@ class GraphD3 {
           if (this.firewallIPs.has(node.id)) {
             // Assign a distinct firewall color
             node.color = "red"; 
-            console.log(node.color);
-            }
+          }
         } else {
           node.r = 20;
           node.opacity = 0.7;         
-          node.color = d3.color(colorMap[node.value.type]);}
+          node.color = d3.color(colorMap[node.value.type]);
         }
       }
-    );
+    });
 
     links.forEach(link => {
       link.opacity = this.getOpacity(link.value / link.max_value);
@@ -81,7 +73,7 @@ class GraphD3 {
       .force("center", d3.forceCenter(this.width / 2, this.height / 2)) // Center the nodes
       .force("x", d3.forceX(this.width / 2).strength(0.2)) // Horizontal force towards the center
       .force("y", d3.forceY(this.height / 2).strength(0.4)) // Vertical force towards the center
-      .on("tick", () => this.ticked()); // Update node and link positions
+      .on("tick", () => this.ticked());
   
     // Create the links
     this.link = this.svg.append('g')
@@ -107,6 +99,30 @@ class GraphD3 {
         .on("start", (event, d) => this.dragstarted(event, d, simulation))
         .on("drag", (event, d) => this.dragged(event, d))
         .on("end", (event, d) => this.dragended(event, d, simulation)));
+
+    // Add the tooltip events similar to the first snippet logic
+    this.node
+      .on("mouseover", (event, d) => {
+        // Show tooltip and set position and content
+        this.tooltip.classed("visible", true)
+          .style("top", `${event.pageY + 10}px`)
+          .style("left", `${event.pageX + 10}px`)
+          .html(`
+            <strong>IP:</strong> ${d.id}<br>
+            <strong>External connections:</strong> ${d.value.count}<br>
+            <strong>DNS connections:</strong> ${d.value.dns_connection}<br>
+          `);
+      })
+      .on("mousemove", (event) => {
+        // Update tooltip position
+        this.tooltip
+          .style("top", `${event.pageY + 10}px`)
+          .style("left", `${event.pageX + 10}px`);
+      })
+      .on("mouseout", () => {
+        // Hide tooltip
+        this.tooltip.classed("visible", false);
+      });
 
     this.updateGraph(nodes, links);
   }
@@ -141,7 +157,6 @@ class GraphD3 {
   }
 
   updateGraph(nodes, links) {
-
     links.forEach(link => {
       link.opacity = this.getOpacity(link.value / link.max_value);
       link.color = d3.color('#999');
@@ -156,13 +171,28 @@ class GraphD3 {
       .merge(this.node)
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
-      .merge(this.node)
-      
-      .on('contextmenu', (event, d) => {
-        event.preventDefault(); // Prevent the default right-click menu
-        this.showTooltip(event, d);
+      .merge(this.node);
+
+    // Re-attach tooltip events after update
+    this.node
+      .on("mouseover", (event, d) => {
+        this.tooltip.classed("visible", true)
+          .style("top", `${event.pageY + 10}px`)
+          .style("left", `${event.pageX + 10}px`)
+          .html(`
+            <strong>IP:</strong> ${d.id}<br>
+            <strong>External connections:</strong> ${d.value.count}<br>
+            <strong>DNS connections:</strong> ${d.value.dns_connection}<br>
+          `);
       })
-      .on('mouseout', () => this.hideTooltip());
+      .on("mousemove", (event) => {
+        this.tooltip
+          .style("top", `${event.pageY + 10}px`)
+          .style("left", `${event.pageX + 10}px`);
+      })
+      .on("mouseout", () => {
+        this.tooltip.classed("visible", false);
+      });
 
     this.link = this.link.data(links);
     this.link.exit().remove();
@@ -178,30 +208,23 @@ class GraphD3 {
   }
   
   getClusterCenter(type, value) {
-    // Define the center position of the cluster based on the node type and value
-    let x_center, y_center;
     let x, y;
     const margin = 40; // Margin from the edge of the screen
-    let maxDistanceX;
-    let maxDistanceY;
+    const x_center = this.width / 2;
+    const y_center = this.height / 2;
 
     if (type === 1) {
-      // Left side of the screen
-      x_center = this.width / 2;
-      y_center = this.height / 2;
+      // cluster to the left
       [x, y] = this.getRandomPositionInCircle(x_center, y_center);
-    } else if (type === 7 ) {
-      // Right side of the screen
-      x_center = this.width / 2;
-      y_center = this.height / 2;
-      do{
+    } else if (type === 7) {
+      // cluster to the right
+      do {
         x = margin + Math.random() * (this.width - margin - 50);
         y = margin + Math.random() * (this.height - margin - 50);
-      }while(Math.sqrt(Math.pow(x - x_center, 2) + Math.pow(y - y_center, 2)) <= Math.min(this.width, this.height) / 3.5);
-
+      } while(Math.sqrt(Math.pow(x - x_center, 2) + Math.pow(y - y_center, 2)) <= Math.min(this.width, this.height) / 3.5);
     } else {
-      // Default to center
-      x = this.width  - margin;
+      // default center
+      x = this.width - margin;
       y = this.height / 2;
     }
 
@@ -232,7 +255,7 @@ class GraphD3 {
     } else {
       return 0.1;
     }
-  };
+  }
 
   getRandomPositionInCircle(centerX, centerY) {
     // Define a random position within a circle around the center
@@ -243,7 +266,6 @@ class GraphD3 {
     const y = centerY + distance * Math.sin(angle);
     return [x, y];
   }
-
 
   highlightNodesByIP(selectedCells) {
     // Reset all nodes to their original stroke and stroke-width
@@ -260,26 +282,6 @@ class GraphD3 {
         .attr('stroke', 'green')
         .attr('stroke-width', 4);
     });
-  }
-
-  showTooltip(event, d) {
-    this.tooltip.html(`
-      <strong>IP:</strong> ${d.id}<br>
-      <strong>External connections:</strong> ${d.value.count}<br>
-      <strong>DNS connections:</strong> ${d.value.dns_connection}<br>
-      `)
-      .style('visibility', 'visible')
-      .style('top', (event.pageY - 10) + 'px')
-      .style('left', (event.pageX + 10) + 'px');
-  }
-
-  moveTooltip(event) {
-    this.tooltip.style('top', (event.pageY - 10) + 'px')
-      .style('left', (event.pageX + 10) + 'px');
-  }
-
-  hideTooltip() {
-    this.tooltip.style('visibility', 'hidden');
   }
 }
 
