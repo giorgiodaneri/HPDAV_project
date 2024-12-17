@@ -232,7 +232,7 @@ class Histogram {
             .domain([0, maxStackHeight])
             .range([this.height, 0]);
         const xAxis = d3.axisBottom(x)
-            .ticks(15)
+            .ticks(25)
             .tickFormat(d => this.formatTimeAxis(d));
         const yAxis = d3.axisLeft(y).ticks(5);
         this.chart.append('g')

@@ -4,7 +4,6 @@ import { updateConfig } from "../../redux/HistoConfigSlice";
 import { toggleClassification } from "../../redux/StreamGraphSlice";
 import "./HistoControlBar.css";
 import ReactSlider from "react-slider";
-import * as d3 from "d3";
 
 function HistoControlBar() {
   const dispatch = useDispatch();
@@ -46,10 +45,12 @@ function HistoControlBar() {
   useEffect(() => {
     if (dataFirewall.length > 0) {
       const initialServices = Array.from(new Set(dataFirewall.map((d) => d.dest_service)))
-        .filter((service) => !service.includes("_") && !["domain", "telnet", "https", "kpop"].includes(service)); // Exclude services with "_"
-      setSelectedServices(initialServices); // Set all services as selected by default
+        .filter((service) => !service.includes("_") && !["domain", "syslog", "auth", "telnet", "https", "kpop"].includes(service));
+      initialServices.push("22_tcp");
+      initialServices.push("6667_tcp");
+      setSelectedServices(initialServices);
     }
-  }, [dataFirewall]); // Runs when dataFirewall changes  
+  }, [dataFirewall]); 
 
   const handleServiceChange = (event) => {
     const selectedOptions = Array.from(event.target.selectedOptions).map(
@@ -73,7 +74,9 @@ function HistoControlBar() {
   };
 
   const uniqueServices = Array.from(new Set(dataFirewall.map((d) => d.dest_service)))
-    .filter((service) => !service.includes("_") && !["domain", "telnet", "https", "kpop"].includes(service));
+    .filter((service) => !service.includes("_") && !["domain", "syslog", "auth", "telnet", "https", "kpop"].includes(service));
+  uniqueServices.push("22_tcp");
+  uniqueServices.push("6667_tcp");
 
   return (
     <form className="control-bar-form" onSubmit={handleOnSubmit}>
@@ -149,12 +152,12 @@ function HistoControlBar() {
                 <input
                   id="ipSwitch"
                   type="checkbox"
-                  checked={showIpToggle} // Make sure this state is defined (e.g., useState(false))
+                  checked={showIpToggle} 
                   onChange={(e) => setShowIpToggle(e.target.checked)}
                 />
                 <span className="slider"></span>
               </label>
-              <span className="toggle-label">Source/Destination</span> {/* Text next to the toggle */}
+              <span className="toggle-label">Source/Destination</span> 
             </div>
 
               {/* Show All Destination Services Checkbox */}
