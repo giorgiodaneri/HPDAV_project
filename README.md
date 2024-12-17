@@ -17,4 +17,4 @@ After this, we can perform some preliminary data anaysis on the filtered data to
 We set up a python server to handle the data for the visualization part. To do this, run the ```server.py``` script, which will start a server on the localhost at port 5000. The server fetches both datasets as soon as the corresponding event is dispatched by ```App.js``` and sends them to the frontend. For the firewall dataset, pagination is applied, otherwise we risk in crashing the browser. After the first request, the server stores the datasets in the cache, making them available for subsequent requests without the need to read them from the disk again.
 
 ## Report
-The report including all the answers to the challenge, as well as the design and implementation choices, can be found in the `AnswerSheet` folder.
+The report including all the answers to the challenge, as well as the design and implementation choices, can be found in the `AnswerSheet` folder. A latex version can be found in the root folder of the repository.
